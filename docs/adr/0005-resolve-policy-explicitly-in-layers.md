@@ -1,0 +1,3 @@
+# Resolve policy explicitly in layers
+
+TechDebtter resolves product defaults, optional Organization Policy from `ORG/.github/.techdebtter.yml`, then optional repository-root `.techdebtter.yml`. Repository values may narrow behavior within organization ceilings but cannot expand permissions, disable required Detectors, or exceed automation limits. Each field defines its resolution semantics instead of relying on generic YAML merging. Present invalid policy stops the operation; confirmed absence falls back; unverifiable Organization Policy permits warned analysis but blocks publication and autonomous Remediation. This makes typos and inaccessible safety controls fail visibly.

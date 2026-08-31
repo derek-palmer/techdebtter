@@ -1,0 +1,3 @@
+# Never execute target code in the Bot
+
+TechDebtter treats repository-controlled commands and package lifecycle scripts as untrusted. Local User Identity mode may run displayed validation commands only after explicit approval. Unattended Bot Identity mode performs static validation, opens draft PRs, and delegates executable validation to the repository's existing required CI. Missing or failed checks keep the PR in draft and route it to a human; the first Remediator does not guess at CI repairs. This prevents privileged TechDebtter workers from executing target code while preserving repository-owned validation.
