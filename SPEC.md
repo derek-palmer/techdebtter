@@ -72,7 +72,7 @@ Continuously turn concrete repository debt into prioritized, auditable GitHub wo
 |---|---|---|---|
 | T1 | done | domain + policy + fingerprint + Criticality + report contracts | I6,I7,I9,V1-V15,V24 |
 | T2 | done | local Git/Trivy analysis + KEV/EPSS enrichment | I1,I4,I9,V1-V15,V24-V25 |
-| T3 | wip | interactive selection + idempotent Finding Issue publication | I2,I5,I8,V4-V12,V16,V19,V28 |
+| T3 | done | interactive selection + idempotent Finding Issue publication | I2,I5,I8,V4-V12,V16,V19,V28 |
 | T4 | pending | installable thin `/techdebtter` skill | I3,I10,V28 |
 | T5 | pending | database-free GitHub Actions controller + App auth | I11,V16-V18,V24-V27,V30 |
 | T6 | pending | npm + `package-lock.json` Remediator + draft PR/CI verification | V17-V23,V30 |

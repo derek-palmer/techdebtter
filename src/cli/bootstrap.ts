@@ -1,13 +1,18 @@
 import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { Octokit } from "@octokit/rest";
+import { activeGhToken } from "../adapters/gh-auth.js";
 import { LocalGitRepositorySource } from "../adapters/git.js";
+import { OctokitGitHubGateway } from "../adapters/github.js";
 import { readRepositoryPolicyFile } from "../adapters/local-policy.js";
 import { FileSystemCache } from "../adapters/fs-cache.js";
 import { CisaKevProvider } from "../adapters/kev.js";
 import { FirstEpssProvider } from "../adapters/epss.js";
+import { execProcessRunner } from "../adapters/process.js";
 import { TrivyVulnerabilityDetector } from "../adapters/trivy.js";
 import type { AnalyzeDependencies } from "../application/analyze.js";
+import type { PublishDependencies } from "../application/publish.js";
 
 let defaultCacheRoot: string | undefined;
 
@@ -27,6 +32,14 @@ export function createDefaultAnalyzeDependencies(): AnalyzeDependencies {
     readOrganizationPolicy: async () => ({ state: "unverifiable" }),
     readRepositoryPolicy: readRepositoryPolicyFile,
     clock,
+  };
+}
+
+export async function createDefaultPublishDependencies(): Promise<PublishDependencies> {
+  const token = await activeGhToken(execProcessRunner);
+  const octokit = new Octokit({ auth: token });
+  return {
+    gateway: new OctokitGitHubGateway({ octokit }),
   };
 }
 

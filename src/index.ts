@@ -123,6 +123,7 @@ export type { CliIo, RunCliOptions } from "./cli/main.js";
 export {
   exceedsFailOnThreshold,
   renderMarkdown,
+  renderPublicationTerminal,
   renderTerminal,
 } from "./cli/render.js";
 
