@@ -1,0 +1,65 @@
+{
+  "name": "techdebtter",
+  "version": "0.1.0",
+  "description": "AI-powered technical-debt remediation agent for software engineering teams.",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "bin": {
+    "techdebtter": "./dist/cli/main.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "schemas",
+    "skills"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "check": "npm run lint && npm run typecheck && npm run test",
+    "prepack": "npm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/derek-palmer/techdebtter.git"
+  },
+  "keywords": [
+    "technical-debt",
+    "security",
+    "vulnerability",
+    "github",
+    "trivy"
+  ],
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/derek-palmer/techdebtter/issues"
+  },
+  "homepage": "https://github.com/derek-palmer/techdebtter#readme",
+  "dependencies": {
+    "@octokit/rest": "^22.0.1",
+    "ajv": "^8.20.0",
+    "commander": "^15.0.0",
+    "execa": "^10.0.1",
+    "yaml": "^2.9.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^26.4.0",
+    "eslint": "^10.9.1",
+    "tsup": "^8.5.1",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.69.0",
+    "vitest": "^4.1.11"
+  }
+}
