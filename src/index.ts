@@ -6,6 +6,7 @@ export type {
   Finding,
   FindingClass,
   OperatingScope,
+  PolicySource,
   PublicationResult,
   RemediationRoute,
   RepositorySnapshot,
@@ -19,3 +20,18 @@ export type {
   GitHubGateway,
   RepositorySource,
 } from "./domain/ports.js";
+
+export {
+  productDefaults,
+  resolvePolicy,
+  validatePolicy,
+} from "./domain/policy.js";
+
+export type {
+  EffectivePolicy,
+  OrganizationPolicy,
+  PolicyLayerState,
+  PolicyValidationResult,
+  ProductDefaults,
+  RepositoryPolicy,
+} from "./domain/policy.js";

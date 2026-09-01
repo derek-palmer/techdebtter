@@ -1,0 +1,19 @@
+defaults:
+  scan:
+    intervalHours: 48
+  publication:
+    unattendedMinimumCriticality: high
+ceilings:
+  scan:
+    intervalHours: 168
+  remediation:
+    maxOpenPullRequests: 1
+    minHoursBetweenPullRequests: 24
+allowedDetectors:
+  - trivy-vulnerability
+  - future-detector
+requiredDetectors:
+  - trivy-vulnerability
+scope:
+  exclusions:
+    - vendor/**

@@ -1,0 +1,148 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://techdebtter.dev/schemas/policy.schema.json",
+  "title": "TechDebtter Policy",
+  "$defs": {
+    "criticality": {
+      "type": "string",
+      "enum": ["critical", "high", "medium", "low"]
+    },
+    "detectorId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "exclusion": {
+      "type": "string",
+      "minLength": 1
+    },
+    "scanSettings": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "intervalHours": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "publicationSettings": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "unattendedMinimumCriticality": { "$ref": "#/$defs/criticality" }
+      }
+    },
+    "vulnerabilitySettings": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "epssRaiseThreshold": {
+          "type": ["number", "null"],
+          "minimum": 0,
+          "maximum": 1
+        }
+      }
+    },
+    "remediationSettings": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "maxOpenPullRequests": { "type": "integer", "minimum": 0 },
+        "minHoursBetweenPullRequests": { "type": "integer", "minimum": 0 },
+        "allowStaticOnlyPromotion": { "type": "boolean" }
+      }
+    },
+    "scopeSettings": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "exclusions": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/exclusion" }
+        }
+      }
+    },
+    "organizationCeilings": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "scan": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "intervalHours": { "type": "integer", "minimum": 1 }
+          }
+        },
+        "remediation": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "maxOpenPullRequests": { "type": "integer", "minimum": 0 },
+            "minHoursBetweenPullRequests": { "type": "integer", "minimum": 0 }
+          }
+        }
+      }
+    },
+    "organizationDefaults": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "scan": { "$ref": "#/$defs/scanSettings" },
+        "publication": { "$ref": "#/$defs/publicationSettings" },
+        "vulnerability": { "$ref": "#/$defs/vulnerabilitySettings" },
+        "remediation": { "$ref": "#/$defs/remediationSettings" },
+        "scope": { "$ref": "#/$defs/scopeSettings" }
+      }
+    },
+    "organizationPolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "$schema": { "type": "string", "minLength": 1 },
+        "defaults": { "$ref": "#/$defs/organizationDefaults" },
+        "ceilings": { "$ref": "#/$defs/organizationCeilings" },
+        "allowedDetectors": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/detectorId" }
+        },
+        "requiredDetectors": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/detectorId" }
+        },
+        "scope": { "$ref": "#/$defs/scopeSettings" }
+      }
+    },
+    "repositoryPolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "$schema": { "type": "string", "minLength": 1 },
+        "scan": { "$ref": "#/$defs/scanSettings" },
+        "publication": { "$ref": "#/$defs/publicationSettings" },
+        "vulnerability": { "$ref": "#/$defs/vulnerabilitySettings" },
+        "remediation": { "$ref": "#/$defs/remediationSettings" },
+        "detectors": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/detectorId" }
+            }
+          }
+        },
+        "scope": { "$ref": "#/$defs/scopeSettings" },
+        "labels": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  },
+  "oneOf": [
+    { "$ref": "#/$defs/organizationPolicy" },
+    { "$ref": "#/$defs/repositoryPolicy" }
+  ]
+}

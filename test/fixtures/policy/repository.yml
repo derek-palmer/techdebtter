@@ -1,0 +1,14 @@
+scan:
+  intervalHours: 48
+detectors:
+  enabled:
+    - trivy-vulnerability
+    - future-detector
+remediation:
+  enabled: false
+  maxOpenPullRequests: 3
+scope:
+  exclusions:
+    - fixtures/**
+labels:
+  techdebtter:vulnerability: security
