@@ -71,3 +71,11 @@ export { execProcessRunner } from "./adapters/process.js";
 export { PrerequisiteError } from "./adapters/errors.js";
 
 export type { PrerequisiteCode } from "./adapters/errors.js";
+
+export { FileSystemCache } from "./adapters/fs-cache.js";
+
+export { CisaKevProvider, CISA_KEV_URL } from "./adapters/kev.js";
+
+export { FirstEpssProvider, FIRST_EPSS_BASE_URL } from "./adapters/epss.js";
+
+export type { FetchFn } from "./adapters/fetch.js";
