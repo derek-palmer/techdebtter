@@ -8,6 +8,15 @@ export type RemediationRoute =
   | "ready-for-agent"
   | "ready-for-human";
 
+/** Provenance markers recorded on an Analysis Report and Effective Policy. */
+export type PolicySource =
+  | "product-defaults"
+  | "organization-policy"
+  | "organization-absent"
+  | "organization-unverifiable"
+  | "repository-policy"
+  | "repository-absent";
+
 export interface RepositorySnapshot {
   owner: string;
   repo: string;
@@ -64,7 +73,7 @@ export interface AnalysisReport {
   generatedAt: string;
   reproducible: boolean;
   snapshot: RepositorySnapshot;
-  policy: { verified: boolean; sources: string[] };
+  policy: { verified: boolean; sources: PolicySource[] };
   findings: Finding[];
   warnings: string[];
   reportHash?: string;
