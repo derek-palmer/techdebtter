@@ -11,8 +11,8 @@ export interface ProcessRunner {
 export const execProcessRunner: ProcessRunner = {
   async run(command, args, options) {
     const result = await execa(command, args, {
-      cwd: options?.cwd,
       reject: false,
+      ...(options?.cwd ? { cwd: options.cwd } : {}),
     });
     return {
       stdout: result.stdout,

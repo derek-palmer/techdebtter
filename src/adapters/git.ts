@@ -6,7 +6,7 @@ import { execProcessRunner } from "./process.js";
 
 const ORIGIN_PATTERNS = [
   /^git@github\.com:(?<owner>[^/]+)\/(?<repo>.+?)(?:\.git)?$/,
-  /^https:\/\/github\.com\/(?<owner>[^/]+)\/(?<repo>.+?)(?:\.git)?$/,
+  /^https:\/\/(?:[^@]+@)?github\.com\/(?<owner>[^/]+)\/(?<repo>.+?)(?:\.git)?$/,
   /^ssh:\/\/git@github\.com\/(?<owner>[^/]+)\/(?<repo>.+?)(?:\.git)?$/,
 ];
 
@@ -28,7 +28,11 @@ export function parseGitHubOrigin(originUrl: string): { owner: string; repo: str
 }
 
 export class LocalGitRepositorySource implements RepositorySource {
-  constructor(private readonly runner: ProcessRunner = execProcessRunner) {}
+  private readonly runner: ProcessRunner;
+
+  constructor(runner: ProcessRunner = execProcessRunner) {
+    this.runner = runner;
+  }
 
   async snapshot(scope: OperatingScope): Promise<RepositorySnapshot> {
     const root = scope.localPath;

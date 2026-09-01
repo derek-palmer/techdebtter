@@ -26,6 +26,12 @@ describe("parseGitHubOrigin", () => {
       owner: "acme",
       repo: "api",
     });
+    expect(
+      parseGitHubOrigin("https://x-access-token:secret@github.com/Acme/Api.git"),
+    ).toEqual({
+      owner: "acme",
+      repo: "api",
+    });
   });
 });
 

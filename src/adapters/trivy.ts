@@ -28,8 +28,11 @@ interface TrivyReport {
 
 export class TrivyVulnerabilityDetector implements Detector {
   readonly id = "trivy-vulnerability";
+  private readonly runner: ProcessRunner;
 
-  constructor(private readonly runner: ProcessRunner = execProcessRunner) {}
+  constructor(runner: ProcessRunner = execProcessRunner) {
+    this.runner = runner;
+  }
 
   async detect(
     snapshot: RepositorySnapshot,
