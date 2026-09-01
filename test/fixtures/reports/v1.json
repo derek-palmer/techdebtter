@@ -1,0 +1,47 @@
+{
+  "schemaVersion": "1.0.0",
+  "generatedAt": "2026-08-31T12:00:00.000Z",
+  "reproducible": true,
+  "snapshot": {
+    "owner": "acme",
+    "repo": "api",
+    "commitSha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "dirty": false
+  },
+  "policy": {
+    "verified": false,
+    "sources": [
+      "product-defaults",
+      "organization-unverifiable",
+      "repository-absent"
+    ]
+  },
+  "findings": [
+    {
+      "selectionId": "abc123def456",
+      "fingerprint": "abc123def4567890abc123def4567890abc123def4567890abc123def4567890",
+      "detectionFingerprints": ["det-1"],
+      "class": "vulnerability",
+      "title": "lodash@4.17.21: CVE-2026-0001",
+      "calculatedCriticality": "critical",
+      "effectiveCriticality": "critical",
+      "criticalityReasons": [
+        "CISA KEV confirms relevant exploitation evidence from cisa-kev"
+      ],
+      "route": "ready-for-agent",
+      "evidence": [
+        {
+          "kind": "detector",
+          "source": "trivy-vulnerability",
+          "observedAt": "2026-08-31T12:00:00.000Z",
+          "subject": "raw-result",
+          "value": "fixture-hash"
+        }
+      ]
+    }
+  ],
+  "warnings": [
+    "Organization policy could not be verified; publication and autonomous remediation remain blocked"
+  ],
+  "reportHash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+}

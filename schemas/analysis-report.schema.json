@@ -1,0 +1,151 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://techdebtter.dev/schemas/analysis-report.schema.json",
+  "title": "TechDebtter Analysis Report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "generatedAt",
+    "reproducible",
+    "snapshot",
+    "policy",
+    "findings",
+    "warnings"
+  ],
+  "properties": {
+    "schemaVersion": { "const": "1.0.0" },
+    "generatedAt": { "type": "string", "minLength": 1 },
+    "reproducible": { "type": "boolean" },
+    "reportHash": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "snapshot": { "$ref": "#/$defs/repositorySnapshot" },
+    "policy": { "$ref": "#/$defs/policyProvenance" },
+    "findings": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/finding" }
+    },
+    "warnings": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  },
+  "$defs": {
+    "criticality": {
+      "type": "string",
+      "enum": ["critical", "high", "medium", "low"]
+    },
+    "findingClass": {
+      "type": "string",
+      "enum": ["vulnerability", "debt", "defect"]
+    },
+    "remediationRoute": {
+      "type": "string",
+      "enum": [
+        "needs-triage",
+        "needs-info",
+        "ready-for-agent",
+        "ready-for-human"
+      ]
+    },
+    "policySource": {
+      "type": "string",
+      "enum": [
+        "product-defaults",
+        "organization-policy",
+        "organization-absent",
+        "organization-unverifiable",
+        "repository-policy",
+        "repository-absent"
+      ]
+    },
+    "repositorySnapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["owner", "repo", "commitSha", "dirty"],
+      "properties": {
+        "owner": { "type": "string", "minLength": 1 },
+        "repo": { "type": "string", "minLength": 1 },
+        "commitSha": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+        "dirty": { "type": "boolean" }
+      }
+    },
+    "policyProvenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["verified", "sources"],
+      "properties": {
+        "verified": { "type": "boolean" },
+        "sources": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/policySource" }
+        }
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "source", "observedAt", "subject", "value"],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "repository",
+            "detector",
+            "severity",
+            "kev",
+            "epss",
+            "validation"
+          ]
+        },
+        "source": { "type": "string" },
+        "observedAt": { "type": "string", "minLength": 1 },
+        "subject": { "type": "string" },
+        "value": {
+          "oneOf": [
+            { "type": "string" },
+            { "type": "number" },
+            { "type": "boolean" }
+          ]
+        },
+        "url": { "type": "string" }
+      }
+    },
+    "finding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "selectionId",
+        "fingerprint",
+        "detectionFingerprints",
+        "class",
+        "title",
+        "calculatedCriticality",
+        "effectiveCriticality",
+        "criticalityReasons",
+        "route",
+        "evidence"
+      ],
+      "properties": {
+        "selectionId": { "type": "string", "minLength": 1 },
+        "fingerprint": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "detectionFingerprints": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "class": { "$ref": "#/$defs/findingClass" },
+        "title": { "type": "string" },
+        "calculatedCriticality": { "$ref": "#/$defs/criticality" },
+        "effectiveCriticality": { "$ref": "#/$defs/criticality" },
+        "criticalityReasons": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "route": { "$ref": "#/$defs/remediationRoute" },
+        "evidence": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/evidence" }
+        }
+      }
+    }
+  }
+}
