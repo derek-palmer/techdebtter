@@ -9,7 +9,7 @@ This document tracks delivery progress, repository layout, and acceptance criter
 | Domain, policy, fingerprints, Criticality, report contracts | T1 | done | `src/domain/`, `schemas/policy.schema.json`, `schemas/analysis-report.schema.json` |
 | Local Git + Trivy analysis with KEV/EPSS enrichment | T2 | done | `src/adapters/{git,trivy,kev,epss,fs-cache}.ts`, `src/application/analyze.ts`, `analyze` CLI |
 | Interactive selection + idempotent Finding Issue publication | T3 | done | `publish()` CLI, GitHub adapter, tracer acceptance test |
-| Installable `/techdebtter` skill | T4 | pending | `skills/techdebtter/SKILL.md` placeholder only |
+| Installable `/techdebtter` skill | T4 | done | `skills/techdebtter/SKILL.md` + contract tests |
 | Database-free GitHub Actions controller | T5 | pending | `src/action/` not started |
 | npm + `package-lock.json` Remediator | T6 | pending | |
 | Ruby, Terraform, Docker, Python Remediators + opt-in AI | T7 | pending | |
@@ -42,19 +42,7 @@ Key interfaces:
 
 ## Remaining first-tracer work (T3 completion)
 
-T3 is complete. Next slice: installable skill (T4).
-
-## Next slice: installable skill (T4)
-
-**Files:** `skills/techdebtter/SKILL.md`, `test/skills/techdebtter.test.ts`, `README.md`
-
-**Acceptance criteria:**
-
-- Frontmatter name `techdebtter`; user invocation only.
-- Calls `capabilities --json`; prefers project-pinned CLI; asks before CLI install/upgrade.
-- Verifies `gh` and Trivy prerequisites; analyzes before selection; confirms explicit selection before publication.
-- Offers but never auto-installs `to-issues`; contains no duplicated policy defaults or report schema.
-- Document project-local (`npx skills add OWNER/techdebtter --skill techdebtter`) and global (`-g`) installation.
+T3 and T4 are complete. Next slice: database-free GitHub Actions controller (T5).
 
 ## Subsequent slices (T5–T7)
 

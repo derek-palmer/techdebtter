@@ -62,6 +62,22 @@ Inspect CLI capabilities for skill or automation negotiation:
 techdebtter capabilities --json
 ```
 
+## Agent skill
+
+Install the `/techdebtter` skill for conversational analyze → select → publish orchestration:
+
+```bash
+npx skills add derek-palmer/techdebtter --skill techdebtter
+```
+
+Global install:
+
+```bash
+npx skills add derek-palmer/techdebtter --skill techdebtter -g
+```
+
+The skill is a thin wrapper over this CLI. Pass `--agent <name>` when prompted. See `skills/techdebtter/SKILL.md` for the workflow contract.
+
 ## Exit codes
 
 | Code | Meaning |
