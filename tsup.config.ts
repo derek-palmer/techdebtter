@@ -17,7 +17,7 @@ export default defineConfig([
   },
   {
     ...shared,
-    entry: { "cli/main": "src/cli/main.ts" },
+    entry: { "cli/main": "src/cli/main.ts", "cli/bootstrap": "src/cli/bootstrap.ts" },
     dts: false,
     clean: false,
     banner: {

@@ -79,3 +79,25 @@ export { CisaKevProvider, CISA_KEV_URL } from "./adapters/kev.js";
 export { FirstEpssProvider, FIRST_EPSS_BASE_URL } from "./adapters/epss.js";
 
 export type { FetchFn } from "./adapters/fetch.js";
+
+export { analyze, assertAnalyzeIsReadOnly } from "./application/analyze.js";
+
+export type { AnalyzeDependencies } from "./application/analyze.js";
+
+export { computeReportHash, withReportHash } from "./application/report-hash.js";
+
+export { createAnalysisReportValidator, analysisReportSchema } from "./application/report-schema.js";
+
+export { runCli } from "./cli/main.js";
+
+export type { CliIo, RunCliOptions } from "./cli/main.js";
+
+export {
+  exceedsFailOnThreshold,
+  renderMarkdown,
+  renderTerminal,
+} from "./cli/render.js";
+
+export { PolicyError } from "./domain/policy-error.js";
+
+export { readRepositoryPolicyFile } from "./adapters/local-policy.js";
