@@ -3,7 +3,11 @@ import { join } from "node:path";
 import type { Cache } from "../domain/ports.js";
 
 export class FileSystemCache implements Cache {
-  constructor(private readonly root: string) {}
+  private readonly root: string;
+
+  constructor(root: string) {
+    this.root = root;
+  }
 
   async get(
     key: string,

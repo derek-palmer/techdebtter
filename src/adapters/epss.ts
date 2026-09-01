@@ -18,8 +18,11 @@ interface EpssResponse {
 
 export class FirstEpssProvider implements EnrichmentProvider {
   readonly id = "first-epss";
+  private readonly fetchFn: FetchFn;
 
-  constructor(private readonly fetchFn: FetchFn) {}
+  constructor(fetchFn: FetchFn) {
+    this.fetchFn = fetchFn;
+  }
 
   async enrich(detections: Detection[]): Promise<{
     evidenceByVulnerability: Map<string, Evidence[]>;

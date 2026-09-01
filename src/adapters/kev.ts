@@ -14,12 +14,15 @@ import type { FetchFn } from "./fetch.js";
 
 export class CisaKevProvider implements EnrichmentProvider {
   readonly id = "cisa-kev";
+  private readonly cache: Cache;
+  private readonly clock: Clock;
+  private readonly fetchFn: FetchFn;
 
-  constructor(
-    private readonly cache: Cache,
-    private readonly clock: Clock,
-    private readonly fetchFn: FetchFn,
-  ) {}
+  constructor(cache: Cache, clock: Clock, fetchFn: FetchFn) {
+    this.cache = cache;
+    this.clock = clock;
+    this.fetchFn = fetchFn;
+  }
 
   async enrich(detections: Detection[]): Promise<{
     evidenceByVulnerability: Map<string, Evidence[]>;
