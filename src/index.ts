@@ -84,6 +84,34 @@ export { analyze, assertAnalyzeIsReadOnly } from "./application/analyze.js";
 
 export type { AnalyzeDependencies } from "./application/analyze.js";
 
+export { publish } from "./application/publish.js";
+
+export type { PublishDependencies } from "./application/publish.js";
+
+export { PublishError } from "./application/publish-error.js";
+
+export type { PublishErrorCode } from "./application/publish-error.js";
+
+export { activeGhToken, GhAuthError, redactToken } from "./adapters/gh-auth.js";
+
+export {
+  OctokitGitHubGateway,
+  buildMetadata,
+  buildSemanticLabels,
+  computeEvidenceDigest,
+  findIssueByFingerprint,
+  mergeIssueLabels,
+  parseMetadata,
+  renderIssueBody,
+  renderMetadataComment,
+} from "./adapters/github.js";
+
+export type {
+  GitHubIssueRecord,
+  OctokitGitHubGatewayOptions,
+  TechDebtterIssueMetadata,
+} from "./adapters/github.js";
+
 export { computeReportHash, withReportHash } from "./application/report-hash.js";
 
 export { createAnalysisReportValidator, analysisReportSchema } from "./application/report-schema.js";
