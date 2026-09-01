@@ -53,3 +53,21 @@ export type { CriticalityResult } from "./domain/criticality.js";
 export { triage } from "./domain/triage.js";
 
 export type { TriageContext } from "./domain/triage.js";
+
+export {
+  LocalGitRepositorySource,
+  parseGitHubOrigin,
+} from "./adapters/git.js";
+
+export {
+  TrivyVulnerabilityDetector,
+  isSupportedVersion,
+} from "./adapters/trivy.js";
+
+export type { ProcessRunner } from "./adapters/process.js";
+
+export { execProcessRunner } from "./adapters/process.js";
+
+export { PrerequisiteError } from "./adapters/errors.js";
+
+export type { PrerequisiteCode } from "./adapters/errors.js";
