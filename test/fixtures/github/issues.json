@@ -1,0 +1,45 @@
+[
+  {
+    "number": 42,
+    "state": "open",
+    "state_reason": null,
+    "title": "lodash@4.17.21: CVE-2026-0001",
+    "body": "## Finding\n\nlodash@4.17.21: CVE-2026-0001\n\n<!-- techdebtter-metadata:1.0.0\n{\n  \"schemaVersion\": \"1.0.0\",\n  \"reportHash\": \"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",\n  \"snapshotSha\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\n  \"findingFingerprint\": \"abc123def4567890abc123def4567890abc123def4567890abc123def4567890\",\n  \"detectionFingerprints\": [\"det-1\"],\n  \"provenance\": {\n    \"generatedAt\": \"2026-08-31T12:00:00.000Z\",\n    \"policyVerified\": true,\n    \"policySources\": [\"product-defaults\", \"organization-absent\"]\n  },\n  \"suppression\": null,\n  \"evidenceDigest\": \"d0b19b0d6609dd249bc089cb26785079f7b707741f9eb9316073b3742c6b58cb\"\n}\n-->",
+    "labels": [
+      { "name": "techdebtter" },
+      { "name": "techdebtter:vulnerability" },
+      { "name": "techdebtter:critical" },
+      { "name": "ready-for-agent" }
+    ],
+    "html_url": "https://github.com/acme/api/issues/42",
+    "closed_at": null
+  },
+  {
+    "number": 7,
+    "state": "closed",
+    "state_reason": "completed",
+    "title": "lodash@4.17.21: CVE-2026-0001",
+    "body": "## Finding\n\n<!-- techdebtter-metadata:1.0.0\n{\n  \"schemaVersion\": \"1.0.0\",\n  \"reportHash\": \"old-report-hash\",\n  \"snapshotSha\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\n  \"findingFingerprint\": \"abc123def4567890abc123def4567890abc123def4567890abc123def4567890\",\n  \"detectionFingerprints\": [\"det-1\"],\n  \"provenance\": {\n    \"generatedAt\": \"2026-08-30T12:00:00.000Z\",\n    \"policyVerified\": true,\n    \"policySources\": []\n  },\n  \"suppression\": null,\n  \"evidenceDigest\": \"d0b19b0d6609dd249bc089cb26785079f7b707741f9eb9316073b3742c6b58cb\"\n}\n-->",
+    "labels": [
+      { "name": "techdebtter" },
+      { "name": "techdebtter:vulnerability" },
+      { "name": "techdebtter:critical" },
+      { "name": "ready-for-agent" }
+    ],
+    "html_url": "https://github.com/acme/api/issues/7",
+    "closed_at": "2026-08-30T18:00:00.000Z"
+  },
+  {
+    "number": 99,
+    "state": "closed",
+    "state_reason": "not_planned",
+    "title": "lodash@4.17.21: CVE-2026-0001",
+    "body": "## Finding\n\n<!-- techdebtter-metadata:1.0.0\n{\n  \"schemaVersion\": \"1.0.0\",\n  \"reportHash\": \"old-report-hash\",\n  \"snapshotSha\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\n  \"findingFingerprint\": \"abc123def4567890abc123def4567890abc123def4567890abc123def4567890\",\n  \"detectionFingerprints\": [\"det-1\"],\n  \"provenance\": {\n    \"generatedAt\": \"2026-08-30T12:00:00.000Z\",\n    \"policyVerified\": true,\n    \"policySources\": []\n  },\n  \"suppression\": {\n    \"state\": \"active\",\n    \"closedAt\": \"2026-08-30T18:00:00.000Z\",\n    \"reason\": \"not_planned\"\n  },\n  \"evidenceDigest\": \"d0b19b0d6609dd249bc089cb26785079f7b707741f9eb9316073b3742c6b58cb\"\n}\n-->",
+    "labels": [
+      { "name": "techdebtter" },
+      { "name": "techdebtter:vulnerability" }
+    ],
+    "html_url": "https://github.com/acme/api/issues/99",
+    "closed_at": "2026-08-30T18:00:00.000Z"
+  }
+]
