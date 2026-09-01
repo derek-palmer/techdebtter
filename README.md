@@ -16,4 +16,4 @@ Architecture and initial delivery contracts are specified; implementation procee
 - [Architecture](docs/architecture.md)
 - [Domain language](CONTEXT.md)
 - [Architecture decisions](docs/adr/)
-- [Implementation plan](derek-ai-plans/2026-08-31-techdebtter-architecture.md)
+- [Implementation plan](docs/implementation-plan.md)

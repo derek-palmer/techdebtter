@@ -165,3 +165,5 @@ Node.js 22 is the runtime floor; CI covers Node 22 and 24; the Action targets No
 5. Database-free GitHub Actions controller.
 6. npm/`package-lock.json` Remediation with draft PR and CI verification.
 7. Independent Ruby, Terraform, Docker, Python, and opt-in AI adapters.
+
+See [implementation-plan.md](implementation-plan.md) for current status and acceptance criteria.
