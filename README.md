@@ -78,6 +78,19 @@ npx skills add derek-palmer/techdebtter --skill techdebtter -g
 
 The skill is a thin wrapper over this CLI. Pass `--agent <name>` when prompted. See `skills/techdebtter/SKILL.md` for the workflow contract.
 
+## Bot controller (GitHub Actions)
+
+Organizations run TechDebtter unattended from a private controller repository. Copy `templates/controller-workflow.yml`, pin `uses:` lines to a reviewed full commit SHA, and configure:
+
+- Variables: `TECHDEBTTER_ORGANIZATION`
+- Secrets: `TECHDEBTTER_APP_ID`, `TECHDEBTTER_APP_INSTALLATION_ID`, `TECHDEBTTER_APP_PRIVATE_KEY`, plus a contents-read checkout token
+
+Phases are separate jobs with fresh short-lived installation tokens:
+
+1. **discover** — list installation repositories
+2. **analyze** — read-only analysis of one target checkout
+3. **publish** — reconcile only evidence-verified Critical/High vulnerabilities by default
+
 ## Exit codes
 
 | Code | Meaning |

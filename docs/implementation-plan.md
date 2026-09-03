@@ -10,7 +10,7 @@ This document tracks delivery progress, repository layout, and acceptance criter
 | Local Git + Trivy analysis with KEV/EPSS enrichment | T2 | done | `src/adapters/{git,trivy,kev,epss,fs-cache}.ts`, `src/application/analyze.ts`, `analyze` CLI |
 | Interactive selection + idempotent Finding Issue publication | T3 | done | `publish()` CLI, GitHub adapter, tracer acceptance test |
 | Installable `/techdebtter` skill | T4 | done | `skills/techdebtter/SKILL.md` + contract tests |
-| Database-free GitHub Actions controller | T5 | pending | `src/action/` not started |
+| Database-free GitHub Actions controller | T5 | done | Action phases, App auth, unattended selection, controller template |
 | npm + `package-lock.json` Remediator | T6 | pending | |
 | Ruby, Terraform, Docker, Python Remediators + opt-in AI | T7 | pending | |
 
@@ -42,12 +42,19 @@ Key interfaces:
 
 ## Remaining first-tracer work (T3 completion)
 
-T3 and T4 are complete. Next slice: database-free GitHub Actions controller (T5).
+T3–T5 are complete. Next slice: npm Remediator (T6).
 
-## Subsequent slices (T5–T7)
+## Subsequent slices (T6–T7)
 
 Write separate execution plans when each slice begins:
 
-1. **T5 — Bot controller:** database-free controller repository workflow, GitHub App phase-scoped tokens, scheduled/`workflow_dispatch` runs, unattended Critical/High Vulnerability publication default.
-2. **T6 — npm Remediator:** `package.json` + `package-lock.json` direct dependency upgrades, draft PR lifecycle, required CI observation, post-merge verification Scan.
-3. **T7 — Additional ecosystems:** Ruby, Terraform, Docker, Python Remediator adapters (one independently testable ecosystem per delivery); opt-in AI Detector/planning adapters with privacy and provenance contract tests.
+1. **T6 — npm Remediator:** `package.json` + `package-lock.json` direct dependency upgrades, draft PR lifecycle, required CI observation, post-merge verification Scan.
+2. **T7 — Additional ecosystems:** Ruby, Terraform, Docker, Python Remediator adapters (one independently testable ecosystem per delivery); opt-in AI Detector/planning adapters with privacy and provenance contract tests.
+
+## T5 delivered
+
+- `action.yml` + `src/action/main.ts` with `discover` / `analyze` / `publish` phases
+- Phase-scoped GitHub App installation tokens (`src/adapters/github-app-auth.ts`)
+- Unattended selection of evidence-verified Critical/High vulnerabilities (`src/application/unattended-select.ts`)
+- Controller workflow template (`templates/controller-workflow.yml`) for private org controller repos
+

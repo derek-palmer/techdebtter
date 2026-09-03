@@ -127,6 +127,32 @@ export {
   renderTerminal,
 } from "./cli/render.js";
 
+export { selectUnattendedFindings, selectionIds } from "./application/unattended-select.js";
+
+export {
+  filterDiscoveredRepositories,
+  runBotAnalyze,
+  runBotPublish,
+} from "./application/bot.js";
+
+export {
+  createInstallationOctokit,
+  createInstallationToken,
+  listInstallationRepositories,
+  permissionsForPhase,
+} from "./adapters/github-app-auth.js";
+
+export type {
+  BotPhase,
+  GitHubAppCredentials,
+  InstallationRepository,
+  InstallationToken,
+} from "./adapters/github-app-auth.js";
+
+export { runAction } from "./action/main.js";
+
+export type { ActionInputs } from "./action/main.js";
+
 export { PolicyError } from "./domain/policy-error.js";
 
 export { readRepositoryPolicyFile } from "./adapters/local-policy.js";

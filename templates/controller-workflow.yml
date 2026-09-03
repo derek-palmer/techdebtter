@@ -1,0 +1,104 @@
+# Copy into a private Organization controller repository.
+# Pin uses: derek-palmer/techdebtter@<full-commit-sha> before production use.
+#
+# Required secrets:
+#   TECHDEBTTER_APP_ID
+#   TECHDEBTTER_APP_INSTALLATION_ID
+#   TECHDEBTTER_APP_PRIVATE_KEY
+#
+# Required variables:
+#   TECHDEBTTER_ORGANIZATION
+
+name: TechDebtter Controller
+
+on:
+  schedule:
+    - cron: "0 6 * * *"
+  workflow_dispatch:
+    inputs:
+      repository:
+        description: Optional single repository name to analyze
+        required: false
+        type: string
+
+concurrency:
+  group: techdebtter-controller
+  cancel-in-progress: false
+
+permissions: {}
+
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.discover.outputs.matrix }}
+    steps:
+      - name: Discover repositories
+        id: discover
+        uses: derek-palmer/techdebtter@REPLACE_WITH_FULL_COMMIT_SHA
+        with:
+          phase: discover
+          organization: ${{ vars.TECHDEBTTER_ORGANIZATION }}
+          include-repositories: ${{ inputs.repository }}
+          app-id: ${{ secrets.TECHDEBTTER_APP_ID }}
+          installation-id: ${{ secrets.TECHDEBTTER_APP_INSTALLATION_ID }}
+          private-key: ${{ secrets.TECHDEBTTER_APP_PRIVATE_KEY }}
+
+  analyze:
+    needs: discover
+    if: needs.discover.outputs.matrix != ''
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.discover.outputs.matrix) }}
+    steps:
+      - name: Checkout target repository
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          repository: ${{ matrix.repository }}
+          token: ${{ secrets.TECHDEBTTER_CHECKOUT_TOKEN }}
+          persist-credentials: false
+
+      - name: Analyze repository
+        id: analyze
+        uses: derek-palmer/techdebtter@REPLACE_WITH_FULL_COMMIT_SHA
+        with:
+          phase: analyze
+          organization: ${{ vars.TECHDEBTTER_ORGANIZATION }}
+          repository: ${{ matrix.repository }}
+          path: .
+          report-path: techdebtter-report.json
+          app-id: ${{ secrets.TECHDEBTTER_APP_ID }}
+          installation-id: ${{ secrets.TECHDEBTTER_APP_INSTALLATION_ID }}
+          private-key: ${{ secrets.TECHDEBTTER_APP_PRIVATE_KEY }}
+
+      - name: Upload analysis report
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: report-${{ matrix.owner }}-${{ matrix.name }}
+          path: techdebtter-report.json
+          retention-days: 7
+
+  publish:
+    needs: [discover, analyze]
+    if: needs.discover.outputs.matrix != ''
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.discover.outputs.matrix) }}
+    steps:
+      - name: Download analysis report
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: report-${{ matrix.owner }}-${{ matrix.name }}
+
+      - name: Publish eligible findings
+        uses: derek-palmer/techdebtter@REPLACE_WITH_FULL_COMMIT_SHA
+        with:
+          phase: publish
+          organization: ${{ vars.TECHDEBTTER_ORGANIZATION }}
+          repository: ${{ matrix.repository }}
+          report-path: techdebtter-report.json
+          app-id: ${{ secrets.TECHDEBTTER_APP_ID }}
+          installation-id: ${{ secrets.TECHDEBTTER_APP_INSTALLATION_ID }}
+          private-key: ${{ secrets.TECHDEBTTER_APP_PRIVATE_KEY }}
