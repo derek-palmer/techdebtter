@@ -66,6 +66,12 @@ export interface Finding {
   criticalityReasons: string[];
   route: RemediationRoute;
   evidence: Evidence[];
+  /** Present when Triage retained package remediation coordinates from Detections. */
+  packageEcosystem?: string;
+  packageName?: string;
+  installedVersion?: string;
+  fixedVersions?: string[];
+  target?: string;
 }
 
 export interface AnalysisReport {
