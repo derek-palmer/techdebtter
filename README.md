@@ -98,6 +98,8 @@ The first code-changing remediator upgrades **direct** dependencies in `package.
 - all required checks pass → mark ready for review
 - missing or failed checks → keep draft and route to a human (no autonomous repair)
 
+Additional static remediators cover Python `requirements.txt`, Docker `FROM` tags, Ruby `Gemfile` pins, and Terraform `required_providers` versions. AI planning adapters remain **policy opt-in** and send only hashed Evidence with named purpose/provider/model provenance.
+
 ## Exit codes
 
 | Code | Meaning |

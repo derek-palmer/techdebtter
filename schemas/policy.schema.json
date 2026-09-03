@@ -51,6 +51,17 @@
         "allowStaticOnlyPromotion": { "type": "boolean" }
       }
     },
+    "aiSettings": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "allowedPurposes": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
     "scopeSettings": {
       "type": "object",
       "additionalProperties": false,
@@ -90,6 +101,7 @@
         "publication": { "$ref": "#/$defs/publicationSettings" },
         "vulnerability": { "$ref": "#/$defs/vulnerabilitySettings" },
         "remediation": { "$ref": "#/$defs/remediationSettings" },
+        "ai": { "$ref": "#/$defs/aiSettings" },
         "scope": { "$ref": "#/$defs/scopeSettings" }
       }
     },
@@ -120,6 +132,7 @@
         "publication": { "$ref": "#/$defs/publicationSettings" },
         "vulnerability": { "$ref": "#/$defs/vulnerabilitySettings" },
         "remediation": { "$ref": "#/$defs/remediationSettings" },
+        "ai": { "$ref": "#/$defs/aiSettings" },
         "detectors": {
           "type": "object",
           "additionalProperties": false,

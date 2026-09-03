@@ -76,7 +76,7 @@ Continuously turn concrete repository debt into prioritized, auditable GitHub wo
 | T4 | done | installable thin `/techdebtter` skill | I3,I10,V28 |
 | T5 | done | database-free GitHub Actions controller + App auth | I11,V16-V18,V24-V27,V30 |
 | T6 | done | npm + `package-lock.json` Remediator + draft PR/CI verification | V17-V23,V30 |
-| T7 | pending | independent Ruby/Terraform/Docker/Python Remediators + opt-in AI adapters | V21-V23,V29-V30 |
+| T7 | done | independent Ruby/Terraform/Docker/Python Remediators + opt-in AI adapters | V21-V23,V29-V30 |
 
 ## §B Bugs
 

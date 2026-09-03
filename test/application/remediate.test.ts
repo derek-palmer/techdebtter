@@ -214,6 +214,7 @@ function basePolicy(): EffectivePolicy {
     publication: { ...productDefaults.publication, allowed: true },
     vulnerability: productDefaults.vulnerability,
     remediation: { ...productDefaults.remediation, allowed: true },
+    ai: productDefaults.ai,
     scope: { exclusions: [] },
     labels: {},
     organizationVerified: true,

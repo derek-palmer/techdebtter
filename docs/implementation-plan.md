@@ -12,7 +12,7 @@ This document tracks delivery progress, repository layout, and acceptance criter
 | Installable `/techdebtter` skill | T4 | done | `skills/techdebtter/SKILL.md` + contract tests |
 | Database-free GitHub Actions controller | T5 | done | Action phases, App auth, unattended selection, controller template |
 | npm + `package-lock.json` Remediator | T6 | done | Static npm upgrades, draft PR budget, CI observation |
-| Ruby, Terraform, Docker, Python Remediators + opt-in AI | T7 | pending | |
+| Ruby, Terraform, Docker, Python Remediators + opt-in AI | T7 | done | Ecosystem remediators + AI privacy gate |
 
 ## Repository layout
 
@@ -42,13 +42,7 @@ Key interfaces:
 
 ## Remaining first-tracer work (T3 completion)
 
-T3–T6 are complete. Next slice: additional ecosystems + opt-in AI (T7).
-
-## Subsequent slices (T7)
-
-Write a separate execution plan when T7 begins:
-
-1. **T7 — Additional ecosystems:** Ruby, Terraform, Docker, Python Remediator adapters (one independently testable ecosystem per delivery); opt-in AI Detector/planning adapters with privacy and provenance contract tests.
+T1–T7 first-line delivery slices are complete.
 
 ## T5 delivered
 
@@ -63,4 +57,10 @@ Write a separate execution plan when T7 begins:
 - `NpmPackageLockRemediator` static direct-dependency upgrades (no lifecycle script execution)
 - Remediation budget evaluation and required-CI observation (`remediate`, `observeRemediationPullRequest`)
 - Failed/missing required checks stay draft with no autonomous repair loop
+
+## T7 delivered
+
+- Python, Docker, Ruby, and Terraform static remediators registered beside npm
+- Opt-in AI policy (`ai.enabled` / `ai.allowedPurposes`) defaulting to off
+- AI payload builder hashes Evidence values and records provider/model/purpose provenance without raw detector blobs
 
