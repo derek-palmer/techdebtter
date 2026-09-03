@@ -170,6 +170,29 @@ export type {
 
 export { NpmPackageLockRemediator } from "./adapters/npm-remediator.js";
 
+export { PythonRequirementsRemediator } from "./adapters/python-remediator.js";
+
+export { DockerBaseImageRemediator } from "./adapters/docker-remediator.js";
+
+export { RubyGemfileRemediator } from "./adapters/ruby-remediator.js";
+
+export { TerraformProviderRemediator } from "./adapters/terraform-remediator.js";
+
+export { createDefaultRemediators } from "./adapters/remediators.js";
+
+export {
+  AiPolicyError,
+  assertAiAllowed,
+  buildAiTaskPayload,
+} from "./adapters/ai.js";
+
+export type {
+  AiPlanner,
+  AiPolicyGate,
+  AiTaskPayload,
+  AiTaskRequest,
+} from "./adapters/ai.js";
+
 export {
   observeRemediationPullRequest,
   remediate,

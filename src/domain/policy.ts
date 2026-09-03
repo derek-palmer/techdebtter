@@ -33,6 +33,10 @@ export interface ProductDefaults {
     minHoursBetweenPullRequests: number;
     allowStaticOnlyPromotion: boolean;
   };
+  ai: {
+    enabled: boolean;
+    allowedPurposes: string[];
+  };
   scope: {
     exclusions: string[];
   };
@@ -45,6 +49,7 @@ export interface OrganizationPolicy {
     publication?: Partial<ProductDefaults["publication"]>;
     vulnerability?: Partial<ProductDefaults["vulnerability"]>;
     remediation?: Partial<ProductDefaults["remediation"]>;
+    ai?: Partial<ProductDefaults["ai"]>;
     scope?: Partial<ProductDefaults["scope"]>;
   };
   ceilings?: {
@@ -67,6 +72,7 @@ export interface RepositoryPolicy {
   publication?: Partial<ProductDefaults["publication"]>;
   vulnerability?: Partial<ProductDefaults["vulnerability"]>;
   remediation?: Partial<ProductDefaults["remediation"]>;
+  ai?: Partial<ProductDefaults["ai"]>;
   detectors?: {
     enabled?: string[];
   };
@@ -87,6 +93,7 @@ export interface EffectivePolicy {
   publication: ProductDefaults["publication"] & { allowed: boolean };
   vulnerability: ProductDefaults["vulnerability"];
   remediation: ProductDefaults["remediation"] & { allowed: boolean };
+  ai: ProductDefaults["ai"];
   scope: { exclusions: string[] };
   labels: Record<string, string>;
   organizationVerified: boolean;
@@ -110,6 +117,10 @@ export const productDefaults: ProductDefaults = {
     maxOpenPullRequests: 1,
     minHoursBetweenPullRequests: 24,
     allowStaticOnlyPromotion: false,
+  },
+  ai: {
+    enabled: false,
+    allowedPurposes: [],
   },
   scope: { exclusions: [] },
 };
@@ -186,6 +197,7 @@ export function resolvePolicy(
   let publication = { ...product.publication };
   let vulnerability = { ...product.vulnerability };
   let remediation = { ...product.remediation };
+  let ai = { ...product.ai, allowedPurposes: [...product.ai.allowedPurposes] };
   let allowedDetectors = [...product.detectors.allowed];
   let requiredDetectors = [...product.detectors.required];
   let exclusions = [...product.scope.exclusions];
@@ -219,6 +231,15 @@ export function resolvePolicy(
     }
     if (org.defaults?.remediation) {
       remediation = { ...remediation, ...org.defaults.remediation };
+    }
+    if (org.defaults?.ai) {
+      ai = {
+        ...ai,
+        ...org.defaults.ai,
+        allowedPurposes: org.defaults.ai.allowedPurposes
+          ? [...org.defaults.ai.allowedPurposes]
+          : ai.allowedPurposes,
+      };
     }
     if (org.defaults?.scope?.exclusions) {
       exclusions = unionStable(exclusions, org.defaults.scope.exclusions);
@@ -275,6 +296,15 @@ export function resolvePolicy(
     if (repo.remediation) {
       remediation = { ...remediation, ...repo.remediation };
     }
+    if (repo.ai) {
+      ai = {
+        ...ai,
+        ...repo.ai,
+        allowedPurposes: repo.ai.allowedPurposes
+          ? [...repo.ai.allowedPurposes]
+          : ai.allowedPurposes,
+      };
+    }
     if (repo.scope?.exclusions) {
       exclusions = unionStable(exclusions, repo.scope.exclusions);
     }
@@ -323,6 +353,7 @@ export function resolvePolicy(
     publication: { ...publication, allowed: writeAllowed },
     vulnerability,
     remediation: { ...remediation, allowed: writeAllowed },
+    ai,
     scope: { exclusions },
     labels,
     organizationVerified,
