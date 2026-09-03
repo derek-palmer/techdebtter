@@ -10,10 +10,70 @@ The goal is simple: make technical debt visible, actionable, and steadily smalle
 
 ## Project status
 
-Architecture and initial delivery contracts are specified; implementation proceeds through tested vertical slices beginning with deterministic local vulnerability analysis and selected GitHub Finding Issue publication.
+The first tracer slice delivers deterministic local vulnerability analysis and user-selected GitHub Finding Issue publication.
 
 - [Specification](SPEC.md)
 - [Architecture](docs/architecture.md)
 - [Domain language](CONTEXT.md)
 - [Architecture decisions](docs/adr/)
 - [Implementation plan](docs/implementation-plan.md)
+
+## Prerequisites
+
+- Node.js 22 or newer
+- [GitHub CLI](https://cli.github.com/) authenticated for publication (`gh auth login`)
+- [Trivy](https://trivy.dev/) on `PATH` within the supported version range
+
+## Install
+
+Project-local (recommended):
+
+```bash
+npm install techdebtter
+```
+
+One-off:
+
+```bash
+npx techdebtter --help
+```
+
+## Usage
+
+Analyze a local checkout and write a versioned JSON report:
+
+```bash
+techdebtter analyze . --format json --output /tmp/report.json
+```
+
+Review findings in the terminal (default), JSON, or Markdown. Each finding has a stable `selectionId` for publication.
+
+Publish selected findings to GitHub Finding Issues:
+
+```bash
+techdebtter publish /tmp/report.json --select <selection-id> --yes
+```
+
+Omit `--yes` in an interactive terminal to review the intended issue writes before confirming. In non-interactive environments, `--yes` is required.
+
+Inspect CLI capabilities for skill or automation negotiation:
+
+```bash
+techdebtter capabilities --json
+```
+
+## Exit codes
+
+| Code | Meaning |
+|---|---|
+| `0` | Success |
+| `2` | Invalid input, policy, report, or publication selection |
+| `3` | Missing prerequisite or authentication failure |
+| `4` | Operational failure or cancelled publication |
+| `10` | `--fail-on` threshold met during analyze |
+
+Machine-readable errors are written to `stderr` as JSON so `stdout` remains valid JSON when `--format json` is used.
+
+## Non-reproducible reports
+
+Dirty worktrees are rejected by default. Pass `--include-uncommitted` to analyze uncommitted changes; the resulting report is marked non-reproducible and **cannot be published** until changes are committed and the repository is reanalyzed.

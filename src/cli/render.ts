@@ -1,4 +1,9 @@
-import type { AnalysisReport, Criticality, Finding } from "../domain/model.js";
+import type {
+  AnalysisReport,
+  Criticality,
+  Finding,
+  PublicationResult,
+} from "../domain/model.js";
 
 export function renderTerminal(report: AnalysisReport): string {
   const lines: string[] = [
@@ -81,4 +86,23 @@ export function exceedsFailOnThreshold(
   return findings.some(
     (finding) => rank[finding.effectiveCriticality] <= minimumRank,
   );
+}
+
+export function renderPublicationTerminal(result: PublicationResult): string {
+  const lines: string[] = [`Published ${result.published.length} finding(s):`];
+
+  for (const entry of result.published) {
+    lines.push(
+      `  ${entry.selectionId} -> #${entry.issueNumber} (${entry.action}) ${entry.issueUrl}`,
+    );
+  }
+
+  if (result.warnings.length > 0) {
+    lines.push("", "Warnings:");
+    for (const warning of result.warnings) {
+      lines.push(`- ${warning}`);
+    }
+  }
+
+  return `${lines.join("\n")}\n`;
 }

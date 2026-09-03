@@ -8,7 +8,7 @@ This document tracks delivery progress, repository layout, and acceptance criter
 |---|---|---|---|
 | Domain, policy, fingerprints, Criticality, report contracts | T1 | done | `src/domain/`, `schemas/policy.schema.json`, `schemas/analysis-report.schema.json` |
 | Local Git + Trivy analysis with KEV/EPSS enrichment | T2 | done | `src/adapters/{git,trivy,kev,epss,fs-cache}.ts`, `src/application/analyze.ts`, `analyze` CLI |
-| Interactive selection + idempotent Finding Issue publication | T3 | in progress | `publish()` and GitHub adapter implemented; `publish` CLI and full tracer acceptance pending |
+| Interactive selection + idempotent Finding Issue publication | T3 | done | `publish()` CLI, GitHub adapter, tracer acceptance test |
 | Installable `/techdebtter` skill | T4 | pending | `skills/techdebtter/SKILL.md` placeholder only |
 | Database-free GitHub Actions controller | T5 | pending | `src/action/` not started |
 | npm + `package-lock.json` Remediator | T6 | pending | |
@@ -42,18 +42,7 @@ Key interfaces:
 
 ## Remaining first-tracer work (T3 completion)
 
-### CLI `publish` and `capabilities`
-
-**Files:** `src/cli/main.ts`, `test/cli/publish.test.ts`, `test/cli/capabilities.test.ts`, `test/cli/tracer.test.ts`, `README.md`
-
-**Acceptance criteria:**
-
-- `techdebtter publish <report> --select <id...>` wires Task 7 `publish()`; rejects unknown IDs, duplicates, non-reproducible reports, schema failures, unverified Organization Policy, and out-of-scope owner/repo.
-- Interactive mode summarizes intended issue writes before confirmation; `--yes` only for already explicit selections.
-- `--format json` emits `PublicationResult` on stdout; operational errors stay on stderr.
-- `techdebtter capabilities --json` reports CLI version, supported report schema versions, commands, detectors, and publication support.
-- Full tracer integration test: temp Git repo + fake Trivy/fetch/GitHub → `analyze --format json --output <path>` → `publish --select <id> --yes` twice → one Finding Issue created then reconciled on second run.
-- README documents prerequisites, install/`npx` usage, analyze/report/select/publish flow, exit codes, and non-reproducible report restriction.
+T3 is complete. Next slice: installable skill (T4).
 
 ## Next slice: installable skill (T4)
 
