@@ -91,6 +91,13 @@ Phases are separate jobs with fresh short-lived installation tokens:
 2. **analyze** — read-only analysis of one target checkout
 3. **publish** — reconcile only evidence-verified Critical/High vulnerabilities by default
 
+## Remediation (npm)
+
+The first code-changing remediator upgrades **direct** dependencies in `package.json` + `package-lock.json` with static edits only (no target lifecycle scripts). Bot mode opens a **draft** PR when Remediation Budget allows, then observes required CI:
+
+- all required checks pass → mark ready for review
+- missing or failed checks → keep draft and route to a human (no autonomous repair)
+
 ## Exit codes
 
 | Code | Meaning |

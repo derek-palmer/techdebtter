@@ -11,7 +11,7 @@ This document tracks delivery progress, repository layout, and acceptance criter
 | Interactive selection + idempotent Finding Issue publication | T3 | done | `publish()` CLI, GitHub adapter, tracer acceptance test |
 | Installable `/techdebtter` skill | T4 | done | `skills/techdebtter/SKILL.md` + contract tests |
 | Database-free GitHub Actions controller | T5 | done | Action phases, App auth, unattended selection, controller template |
-| npm + `package-lock.json` Remediator | T6 | pending | |
+| npm + `package-lock.json` Remediator | T6 | done | Static npm upgrades, draft PR budget, CI observation |
 | Ruby, Terraform, Docker, Python Remediators + opt-in AI | T7 | pending | |
 
 ## Repository layout
@@ -42,14 +42,13 @@ Key interfaces:
 
 ## Remaining first-tracer work (T3 completion)
 
-T3–T5 are complete. Next slice: npm Remediator (T6).
+T3–T6 are complete. Next slice: additional ecosystems + opt-in AI (T7).
 
-## Subsequent slices (T6–T7)
+## Subsequent slices (T7)
 
-Write separate execution plans when each slice begins:
+Write a separate execution plan when T7 begins:
 
-1. **T6 — npm Remediator:** `package.json` + `package-lock.json` direct dependency upgrades, draft PR lifecycle, required CI observation, post-merge verification Scan.
-2. **T7 — Additional ecosystems:** Ruby, Terraform, Docker, Python Remediator adapters (one independently testable ecosystem per delivery); opt-in AI Detector/planning adapters with privacy and provenance contract tests.
+1. **T7 — Additional ecosystems:** Ruby, Terraform, Docker, Python Remediator adapters (one independently testable ecosystem per delivery); opt-in AI Detector/planning adapters with privacy and provenance contract tests.
 
 ## T5 delivered
 
@@ -57,4 +56,11 @@ Write separate execution plans when each slice begins:
 - Phase-scoped GitHub App installation tokens (`src/adapters/github-app-auth.ts`)
 - Unattended selection of evidence-verified Critical/High vulnerabilities (`src/application/unattended-select.ts`)
 - Controller workflow template (`templates/controller-workflow.yml`) for private org controller repos
+
+## T6 delivered
+
+- Finding remediation coordinates retained through Triage (`packageName`, `fixedVersions`, …)
+- `NpmPackageLockRemediator` static direct-dependency upgrades (no lifecycle script execution)
+- Remediation budget evaluation and required-CI observation (`remediate`, `observeRemediationPullRequest`)
+- Failed/missing required checks stay draft with no autonomous repair loop
 

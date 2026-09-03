@@ -144,7 +144,15 @@
         "evidence": {
           "type": "array",
           "items": { "$ref": "#/$defs/evidence" }
-        }
+        },
+        "packageEcosystem": { "type": "string" },
+        "packageName": { "type": "string" },
+        "installedVersion": { "type": "string" },
+        "fixedVersions": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "target": { "type": "string" }
       }
     }
   }

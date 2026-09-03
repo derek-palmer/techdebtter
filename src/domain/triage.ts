@@ -110,6 +110,11 @@ export function triage(
       criticalityReasons: criticality.reasons,
       route: hasConcreteEvidence ? "ready-for-agent" : "needs-info",
       evidence: allEvidence,
+      packageEcosystem: primary.packageEcosystem,
+      packageName: primary.packageName,
+      installedVersion: primary.installedVersion,
+      fixedVersions: [...primary.fixedVersions],
+      target: primary.target,
     });
   }
 

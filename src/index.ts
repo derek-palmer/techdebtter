@@ -153,6 +153,37 @@ export { runAction } from "./action/main.js";
 
 export type { ActionInputs } from "./action/main.js";
 
+export {
+  evaluateRemediationBudget,
+  selectRequiredCheckOutcome,
+} from "./domain/remediation.js";
+
+export type {
+  CheckRunSummary,
+  FileMutation,
+  PullRequestRecord,
+  RemediationBudgetState,
+  RemediationGateway,
+  RemediationPlan,
+  Remediator,
+} from "./domain/remediation.js";
+
+export { NpmPackageLockRemediator } from "./adapters/npm-remediator.js";
+
+export {
+  observeRemediationPullRequest,
+  remediate,
+} from "./application/remediate.js";
+
+export type {
+  RemediateDependencies,
+  RemediationResult,
+} from "./application/remediate.js";
+
+export { RemediationError } from "./application/remediation-error.js";
+
+export type { RemediationErrorCode } from "./application/remediation-error.js";
+
 export { PolicyError } from "./domain/policy-error.js";
 
 export { readRepositoryPolicyFile } from "./adapters/local-policy.js";
