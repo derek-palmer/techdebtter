@@ -17,11 +17,24 @@ export default defineConfig([
   },
   {
     ...shared,
-    entry: { "cli/main": "src/cli/main.ts", "cli/bootstrap": "src/cli/bootstrap.ts" },
+    entry: {
+      "cli/main": "src/cli/main.ts",
+      "cli/bootstrap": "src/cli/bootstrap.ts",
+    },
     dts: false,
     clean: false,
     banner: {
       js: "#!/usr/bin/env node",
     },
+  },
+  {
+    ...shared,
+    entry: {
+      "action/main": "src/action/main.ts",
+    },
+    dts: false,
+    clean: false,
+    // Bundle dependencies so the Action runs without a separate npm install.
+    noExternal: [/.*/],
   },
 ]);

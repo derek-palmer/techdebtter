@@ -1,0 +1,65 @@
+name: TechDebtter
+description: Analyze repositories and publish selected Finding Issues as a Bot Identity
+author: TechDebtter
+
+inputs:
+  phase:
+    description: Bot phase to run (discover | analyze | publish)
+    required: true
+  organization:
+    description: Runtime-selected GitHub Organization
+    required: true
+  path:
+    description: Local repository checkout path for analyze
+    required: false
+    default: "."
+  report-path:
+    description: Analysis report JSON path (analyze writes; publish reads)
+    required: false
+    default: techdebtter-report.json
+  repository:
+    description: Optional owner/name for a single-repository matrix entry
+    required: false
+  include-repositories:
+    description: Optional comma-separated repository names to include during discover
+    required: false
+  app-id:
+    description: GitHub App ID used to mint phase-scoped installation tokens
+    required: false
+  installation-id:
+    description: GitHub App installation ID for the Organization
+    required: false
+  private-key:
+    description: GitHub App private key (PEM). Prefer repository secrets.
+    required: false
+  token:
+    description: Optional pre-minted installation token (skips App auth)
+    required: false
+
+outputs:
+  matrix:
+    description: Discover JSON matrix of repositories
+  repository-count:
+    description: Discover repository count
+  report-path:
+    description: Analyze report path
+  finding-count:
+    description: Analyze finding count
+  reproducible:
+    description: Whether the analysis report is reproducible
+  policy-verified:
+    description: Whether Organization Policy was verified
+  selected-count:
+    description: Publish selected finding count
+  published-count:
+    description: Publish reconciled issue count
+  result:
+    description: PublicationResult JSON
+
+runs:
+  using: node24
+  main: dist/action/main.js
+
+branding:
+  icon: shield
+  color: gray-dark
