@@ -22,6 +22,8 @@ import {
   runBotAnalyze,
   runBotPublish,
 } from "../application/bot.js";
+import { runRemediateFromReport } from "../application/run-remediate.js";
+import { OctokitRemediationGateway } from "../adapters/remediation-github.js";
 import type { AnalyzeDependencies } from "../application/analyze.js";
 import type { AnalysisReport } from "../domain/model.js";
 import {
@@ -37,6 +39,8 @@ export interface ActionInputs {
   reportPath: string;
   repository?: string;
   includeRepositories?: string[];
+  selectionId?: string;
+  baseBranch?: string;
   appId?: string;
   installationId?: string;
   privateKey?: string;
@@ -53,6 +57,9 @@ export async function runAction(inputs: ActionInputs): Promise<void> {
       return;
     case "publish":
       await runPublishPhase(inputs);
+      return;
+    case "remediate":
+      await runRemediatePhase(inputs);
       return;
     default: {
       const _exhaustive: never = inputs.phase;
@@ -148,6 +155,42 @@ async function runPublishPhase(inputs: ActionInputs): Promise<void> {
   );
 }
 
+async function runRemediatePhase(inputs: ActionInputs): Promise<void> {
+  if (!inputs.selectionId) {
+    throw new Error("selection-id is required for the remediate phase");
+  }
+
+  const report = JSON.parse(
+    await readFile(resolve(inputs.reportPath), "utf8"),
+  ) as AnalysisReport;
+  const octokit = await resolveOctokit(inputs, "remediate");
+  const policyGateway = new OctokitGitHubGateway({ octokit });
+  const organizationPolicy = parseOrganizationPolicy(
+    await policyGateway.readOrganizationPolicy(report.snapshot.owner),
+  );
+
+  const { result } = await runRemediateFromReport({
+    report,
+    selectionId: inputs.selectionId,
+    localPath: resolve(inputs.localPath),
+    gateway: new OctokitRemediationGateway({ octokit }),
+    policyLayers: {
+      organization: organizationPolicy,
+      repository: { state: "absent" },
+    },
+    ...(inputs.baseBranch ? { baseBranch: inputs.baseBranch } : {}),
+  });
+
+  core.setOutput("status", result.status);
+  core.setOutput("result", JSON.stringify(result));
+  if (result.pullRequest) {
+    core.setOutput("pull-request-number", String(result.pullRequest.number));
+    core.setOutput("pull-request-url", result.pullRequest.url);
+    core.setOutput("draft", String(result.pullRequest.draft));
+  }
+  core.info(`Remediation status: ${result.status}`);
+}
+
 function createAnalyzeDependencies(
   gateway: OctokitGitHubGateway,
 ): AnalyzeDependencies {
@@ -226,7 +269,12 @@ function repositoryName(fullName: string): string {
 
 function readInputsFromEnv(): ActionInputs {
   const phase = requiredInput("phase") as BotPhase;
-  if (phase !== "discover" && phase !== "analyze" && phase !== "publish") {
+  if (
+    phase !== "discover" &&
+    phase !== "analyze" &&
+    phase !== "publish" &&
+    phase !== "remediate"
+  ) {
     throw new Error(`Unsupported phase: ${phase}`);
   }
 
@@ -247,6 +295,14 @@ function readInputsFromEnv(): ActionInputs {
       .split(",")
       .map((value) => value.trim())
       .filter(Boolean);
+  }
+  const selectionId = optionalInput("selection-id");
+  if (selectionId) {
+    inputs.selectionId = selectionId;
+  }
+  const baseBranch = optionalInput("base-branch");
+  if (baseBranch) {
+    inputs.baseBranch = baseBranch;
   }
   const appId = optionalInput("app-id");
   if (appId) {

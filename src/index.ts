@@ -124,6 +124,7 @@ export {
   exceedsFailOnThreshold,
   renderMarkdown,
   renderPublicationTerminal,
+  renderRemediationTerminal,
   renderTerminal,
 } from "./cli/render.js";
 
@@ -193,10 +194,22 @@ export type {
   AiTaskRequest,
 } from "./adapters/ai.js";
 
+export { OctokitRemediationGateway } from "./adapters/remediation-github.js";
+
+export type {
+  OctokitRemediationGatewayOptions,
+} from "./adapters/remediation-github.js";
+
 export {
   observeRemediationPullRequest,
   remediate,
 } from "./application/remediate.js";
+
+export { runRemediateFromReport } from "./application/run-remediate.js";
+
+export type {
+  RunRemediateFromReportOptions,
+} from "./application/run-remediate.js";
 
 export type {
   RemediateDependencies,

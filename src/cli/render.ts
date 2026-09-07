@@ -4,6 +4,7 @@ import type {
   Finding,
   PublicationResult,
 } from "../domain/model.js";
+import type { RemediationResult } from "../application/remediate.js";
 
 export function renderTerminal(report: AnalysisReport): string {
   const lines: string[] = [
@@ -104,5 +105,24 @@ export function renderPublicationTerminal(result: PublicationResult): string {
     }
   }
 
+  return `${lines.join("\n")}\n`;
+}
+
+export function renderRemediationTerminal(result: RemediationResult): string {
+  const lines: string[] = [`Remediation status: ${result.status}`];
+  if (result.pullRequest) {
+    lines.push(
+      `  PR #${result.pullRequest.number} (draft=${String(result.pullRequest.draft)}) ${result.pullRequest.url}`,
+    );
+  }
+  if (result.plan) {
+    lines.push(`  Plan: ${result.plan.summary}`);
+  }
+  if (result.warnings.length > 0) {
+    lines.push("", "Warnings:");
+    for (const warning of result.warnings) {
+      lines.push(`- ${warning}`);
+    }
+  }
   return `${lines.join("\n")}\n`;
 }

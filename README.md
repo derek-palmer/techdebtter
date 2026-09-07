@@ -54,6 +54,12 @@ Publish selected findings to GitHub Finding Issues:
 techdebtter publish /tmp/report.json --select <selection-id> --yes
 ```
 
+Open a draft remediation PR for one finding (static edits only; never runs target lifecycle scripts):
+
+```bash
+techdebtter remediate /tmp/report.json --select <selection-id> --path . --yes
+```
+
 Omit `--yes` in an interactive terminal to review the intended issue writes before confirming. In non-interactive environments, `--yes` is required.
 
 Inspect CLI capabilities for skill or automation negotiation:

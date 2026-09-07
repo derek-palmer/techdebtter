@@ -64,3 +64,8 @@ T1–T7 first-line delivery slices are complete.
 - Opt-in AI policy (`ai.enabled` / `ai.allowedPurposes`) defaulting to off
 - AI payload builder hashes Evidence values and records provider/model/purpose provenance without raw detector blobs
 
+## Remediation wiring
+
+- `OctokitRemediationGateway` creates draft PRs from static mutations, lists budget-eligible PRs, observes required checks, and promotes drafts
+- CLI `techdebtter remediate` and Action phase `remediate` (contents + pull_requests write only in that phase)
+
