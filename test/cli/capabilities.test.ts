@@ -18,13 +18,20 @@ describe("runCli capabilities", () => {
       commands: string[];
       detectors: string[];
       publicationSupported: boolean;
+      remediationSupported: boolean;
     };
 
     expect(payload.cliVersion).toBe("0.1.0");
     expect(payload.reportSchemaVersions).toEqual(["1.0.0"]);
-    expect(payload.commands).toEqual(["analyze", "capabilities", "publish"]);
+    expect(payload.commands).toEqual([
+      "analyze",
+      "capabilities",
+      "publish",
+      "remediate",
+    ]);
     expect(payload.detectors).toEqual(["trivy-vulnerability"]);
     expect(payload.publicationSupported).toBe(true);
+    expect(payload.remediationSupported).toBe(true);
   });
 });
 

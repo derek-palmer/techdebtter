@@ -85,7 +85,7 @@ export async function remediate(
       branchName: `techdebtter/remediate-${finding.selectionId}`,
       baseBranch: dependencies.baseBranch ?? "main",
       title: plan.summary,
-      body: renderRemediationBody(finding, plan),
+      body: renderRemediationBody(finding, plan, remediator.id),
       mutations: plan.mutations,
       labels: ["techdebtter", "ready-for-agent"],
     },
@@ -178,6 +178,7 @@ export async function observeRemediationPullRequest(
 function renderRemediationBody(
   finding: Finding,
   plan: RemediationPlan,
+  remediatorId: string,
 ): string {
   return [
     `## TechDebtter remediation`,
@@ -202,7 +203,7 @@ function renderRemediationBody(
         schemaVersion: "1.0.0",
         findingFingerprint: finding.fingerprint,
         selectionId: finding.selectionId,
-        remediator: "npm-package-lock",
+        remediator: remediatorId,
       },
       null,
       2,

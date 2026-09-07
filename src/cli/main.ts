@@ -10,6 +10,9 @@ import { PrerequisiteError } from "../adapters/errors.js";
 import { analyze, type AnalyzeDependencies } from "../application/analyze.js";
 import { publish, type PublishDependencies } from "../application/publish.js";
 import { PublishError } from "../application/publish-error.js";
+import { runRemediateFromReport } from "../application/run-remediate.js";
+import { RemediationError } from "../application/remediation-error.js";
+import type { RemediateDependencies } from "../application/remediate.js";
 import { PolicyError } from "../domain/policy-error.js";
 import type { AnalysisReport, Criticality, OperatingScope } from "../domain/model.js";
 import {
@@ -23,6 +26,7 @@ import {
   exceedsFailOnThreshold,
   renderMarkdown,
   renderPublicationTerminal,
+  renderRemediationTerminal,
   renderTerminal,
 } from "./render.js";
 
@@ -35,6 +39,13 @@ export interface RunCliOptions {
   dependencies: AnalyzeDependencies;
   publishDependencies?: PublishDependencies;
   createPublishDependencies?: () => Promise<PublishDependencies>;
+  remediateDependencies?: Pick<RemediateDependencies, "gateway"> & {
+    policyLayers?: Parameters<typeof runRemediateFromReport>[0]["policyLayers"];
+    baseBranch?: string;
+  };
+  createRemediateDependencies?: () => Promise<
+    NonNullable<RunCliOptions["remediateDependencies"]>
+  >;
   io?: CliIo;
   confirm?: (summary: string) => Promise<boolean>;
 }
@@ -73,9 +84,10 @@ export async function runCli(
       const payload = {
         cliVersion: PACKAGE_VERSION,
         reportSchemaVersions: [REPORT_SCHEMA_VERSION],
-        commands: ["analyze", "capabilities", "publish"],
+        commands: ["analyze", "capabilities", "publish", "remediate"],
         detectors: ["trivy-vulnerability"],
         publicationSupported: true,
+        remediationSupported: true,
       };
       if (flags.json) {
         io.stdout.write(`${JSON.stringify(payload, null, 2)}\n`);
@@ -95,6 +107,19 @@ export async function runCli(
       exitCode = await runPublishCommand(reportPath, flags, options, io);
     });
 
+  program
+    .command("remediate")
+    .description("Open a draft remediation PR for one selected finding")
+    .argument("<report>", "Path to an analysis report JSON file")
+    .requiredOption("--select <id>", "Finding selection ID to remediate")
+    .option("--path <path>", "Local repository checkout path", ".")
+    .option("--base-branch <branch>", "Pull request base branch", "main")
+    .option("--format <format>", "Output format", "terminal")
+    .option("--yes", "Skip confirmation prompt")
+    .action(async (reportPath: string, flags: RemediateFlags) => {
+      exitCode = await runRemediateCommand(reportPath, flags, options, io);
+    });
+
   try {
     await program.parseAsync(argv);
     return exitCode;
@@ -112,6 +137,14 @@ interface AnalyzeFlags {
 
 interface PublishFlags {
   select: string[];
+  format?: string;
+  yes?: boolean;
+}
+
+interface RemediateFlags {
+  select: string;
+  path?: string;
+  baseBranch?: string;
   format?: string;
   yes?: boolean;
 }
@@ -254,6 +287,98 @@ async function runPublishCommand(
   }
 }
 
+async function runRemediateCommand(
+  reportPath: string,
+  flags: RemediateFlags,
+  options: RunCliOptions,
+  io: CliIo,
+): Promise<number> {
+  const format = flags.format ?? "terminal";
+  if (!["terminal", "json"].includes(format)) {
+    writeStructuredError(io.stderr, `Unsupported format: ${format}`, "invalid-format");
+    return EXIT_INVALID;
+  }
+
+  let report: AnalysisReport;
+  try {
+    const raw = await readFile(resolve(reportPath), "utf8");
+    report = JSON.parse(raw) as AnalysisReport;
+  } catch (error) {
+    writeStructuredError(
+      io.stderr,
+      error instanceof Error ? error.message : "Failed to read analysis report",
+      "invalid-report",
+    );
+    return EXIT_INVALID;
+  }
+
+  const finding = report.findings.find((entry) => entry.selectionId === flags.select);
+  const summary = [
+    `Remediate 1 finding in ${report.snapshot.owner}/${report.snapshot.repo}:`,
+    `  - ${flags.select}: ${finding?.title ?? flags.select}`,
+    `  Path: ${flags.path ?? "."}`,
+    `  Base branch: ${flags.baseBranch ?? "main"}`,
+  ].join("\n");
+
+  if (!flags.yes) {
+    if (!input.isTTY && !options.confirm) {
+      writeStructuredError(
+        io.stderr,
+        "Refusing to remediate without --yes in non-interactive mode",
+        "confirmation-required",
+      );
+      return EXIT_INVALID;
+    }
+    const confirmed = await confirmPublication(summary, options.confirm, io);
+    if (!confirmed) {
+      writeStructuredError(io.stderr, "Remediation cancelled", "cancelled");
+      return EXIT_OPERATIONAL;
+    }
+  }
+
+  try {
+    const remediateDependencies =
+      options.remediateDependencies ??
+      (options.createRemediateDependencies
+        ? await options.createRemediateDependencies()
+        : undefined);
+    if (!remediateDependencies) {
+      writeStructuredError(
+        io.stderr,
+        "Remediate dependencies are not configured",
+        "not-configured",
+      );
+      return EXIT_OPERATIONAL;
+    }
+
+    const { result } = await runRemediateFromReport({
+      report,
+      selectionId: flags.select,
+      localPath: resolve(flags.path ?? "."),
+      gateway: remediateDependencies.gateway,
+      policyLayers: remediateDependencies.policyLayers ?? {
+        organization: { state: "absent" },
+        repository: { state: "absent" },
+      },
+      ...(flags.baseBranch || remediateDependencies.baseBranch
+        ? {
+            baseBranch:
+              flags.baseBranch ?? remediateDependencies.baseBranch ?? "main",
+          }
+        : {}),
+    });
+
+    const rendered =
+      format === "json"
+        ? `${JSON.stringify(result, null, 2)}\n`
+        : renderRemediationTerminal(result);
+    io.stdout.write(rendered);
+    return EXIT_SUCCESS;
+  } catch (error) {
+    return mapErrorToExitCode(error, io);
+  }
+}
+
 function scopeFromReport(report: AnalysisReport): OperatingScope {
   return {
     organization: report.snapshot.owner,
@@ -299,6 +424,10 @@ function mapErrorToExitCode(error: unknown, io: CliIo): number {
     writeStructuredError(io.stderr, error.message, error.code);
     return EXIT_INVALID;
   }
+  if (error instanceof RemediationError) {
+    writeStructuredError(io.stderr, error.message, error.code);
+    return EXIT_INVALID;
+  }
   if (error instanceof GhAuthError) {
     writeStructuredError(io.stderr, error.message, error.code);
     return EXIT_PREREQUISITE;
@@ -336,11 +465,15 @@ function isCriticality(value: string): value is Criticality {
 
 const entryPath = process.argv[1] ? pathToFileURL(process.argv[1]).href : "";
 if (import.meta.url === entryPath) {
-  const { createDefaultAnalyzeDependencies, createDefaultPublishDependencies } =
-    await import("./bootstrap.js");
+  const {
+    createDefaultAnalyzeDependencies,
+    createDefaultPublishDependencies,
+    createDefaultRemediateDependencies,
+  } = await import("./bootstrap.js");
   const exitCode = await runCli(process.argv, {
     dependencies: createDefaultAnalyzeDependencies(),
     createPublishDependencies: createDefaultPublishDependencies,
+    createRemediateDependencies: createDefaultRemediateDependencies,
   });
   process.exitCode = exitCode;
 }

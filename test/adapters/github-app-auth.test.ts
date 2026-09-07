@@ -21,8 +21,16 @@ describe("permissionsForPhase", () => {
     expect(permissions.contents).toBe("read");
   });
 
+  it("grants contents and pull request write only during remediate", () => {
+    const permissions = permissionsForPhase("remediate");
+    expect(permissions.contents).toBe("write");
+    expect(permissions.pull_requests).toBe("write");
+    expect(permissions.checks).toBe("read");
+    expect(permissions.issues).toBeUndefined();
+  });
+
   it("covers every bot phase exhaustively", () => {
-    const phases: BotPhase[] = ["discover", "analyze", "publish"];
+    const phases: BotPhase[] = ["discover", "analyze", "publish", "remediate"];
     for (const phase of phases) {
       expect(permissionsForPhase(phase)).toBeTypeOf("object");
     }
