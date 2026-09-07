@@ -73,6 +73,12 @@ export async function createDefaultRemediateDependencies(): Promise<
   };
 }
 
+export async function createDefaultVerifyDependencies() {
+  const token = await activeGhToken(execProcessRunner);
+  const octokit = new Octokit({ auth: token });
+  return new OctokitGitHubGateway({ octokit });
+}
+
 export async function createCliTestCacheRoot(): Promise<{
   path: string;
   cleanup: () => Promise<void>;

@@ -1,7 +1,13 @@
 import { createAppAuth } from "@octokit/auth-app";
 import { Octokit } from "@octokit/rest";
 
-export type BotPhase = "discover" | "analyze" | "publish" | "remediate";
+export type BotPhase =
+  | "discover"
+  | "analyze"
+  | "publish"
+  | "remediate"
+  | "observe"
+  | "verify";
 
 export interface GitHubAppCredentials {
   appId: number;
@@ -68,6 +74,17 @@ export function permissionsForPhase(
         contents: "write",
         pull_requests: "write",
         checks: "read",
+      };
+    case "observe":
+      return {
+        metadata: "read",
+        pull_requests: "write",
+        checks: "read",
+      };
+    case "verify":
+      return {
+        metadata: "read",
+        issues: "write",
       };
     default: {
       const _exhaustive: never = phase;

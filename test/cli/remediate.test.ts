@@ -103,6 +103,15 @@ describe("runCli remediate", () => {
 function createGateway(): RemediationGateway {
   return {
     listOpenRemediationPullRequests: vi.fn(async () => []),
+    getPullRequest: vi.fn(async () => ({
+      number: 11,
+      url: "https://github.com/acme/api/pull/11",
+      draft: true,
+      headSha: "c".repeat(40),
+      title: "Upgrade lodash",
+      createdAt: "2026-09-07T00:00:00.000Z",
+      labels: ["techdebtter"],
+    })),
     createDraftPullRequest: vi.fn(async () => ({
       number: 11,
       url: "https://github.com/acme/api/pull/11",

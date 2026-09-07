@@ -30,7 +30,14 @@ describe("permissionsForPhase", () => {
   });
 
   it("covers every bot phase exhaustively", () => {
-    const phases: BotPhase[] = ["discover", "analyze", "publish", "remediate"];
+    const phases: BotPhase[] = [
+      "discover",
+      "analyze",
+      "publish",
+      "remediate",
+      "observe",
+      "verify",
+    ];
     for (const phase of phases) {
       expect(permissionsForPhase(phase)).toBeTypeOf("object");
     }

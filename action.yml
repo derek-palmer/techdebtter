@@ -4,7 +4,7 @@ author: TechDebtter
 
 inputs:
   phase:
-    description: Bot phase to run (discover | analyze | publish | remediate)
+    description: Bot phase to run (discover | analyze | publish | remediate | observe | verify)
     required: true
   organization:
     description: Runtime-selected GitHub Organization
@@ -14,7 +14,7 @@ inputs:
     required: false
     default: "."
   report-path:
-    description: Analysis report JSON path (analyze writes; publish/remediate read)
+    description: Analysis report JSON path (analyze writes; publish/remediate/verify read)
     required: false
     default: techdebtter-report.json
   repository:
@@ -30,6 +30,12 @@ inputs:
     description: Pull request base branch for remediate
     required: false
     default: main
+  pull-request-number:
+    description: Pull request number for the observe phase
+    required: false
+  head-sha:
+    description: Optional head SHA override for observe
+    required: false
   app-id:
     description: GitHub App ID used to mint phase-scoped installation tokens
     required: false
@@ -61,15 +67,19 @@ outputs:
   published-count:
     description: Publish reconciled issue count
   result:
-    description: PublicationResult or RemediationResult JSON
+    description: PublicationResult, RemediationResult, or VerificationResult JSON
   status:
-    description: Remediate status
+    description: Remediate/observe status
   pull-request-number:
-    description: Remediate draft PR number
+    description: Remediate/observe draft PR number
   pull-request-url:
-    description: Remediate draft PR URL
+    description: Remediate/observe draft PR URL
   draft:
     description: Whether the remediation PR remains draft
+  closed-count:
+    description: Verify closed Finding Issue count
+  remaining-count:
+    description: Verify remaining open Finding Issue count
 
 runs:
   using: node24

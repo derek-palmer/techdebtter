@@ -17,6 +17,7 @@ export type {
   Clock,
   Detector,
   EnrichmentProvider,
+  FindingVerificationGateway,
   GitHubGateway,
   RepositorySource,
 } from "./domain/ports.js";
@@ -204,6 +205,13 @@ export {
   observeRemediationPullRequest,
   remediate,
 } from "./application/remediate.js";
+
+export {
+  observeAndPromote,
+  verifyRemediatedFindings,
+} from "./application/verify.js";
+
+export type { VerificationResult } from "./application/verify.js";
 
 export { runRemediateFromReport } from "./application/run-remediate.js";
 

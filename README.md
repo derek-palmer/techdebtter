@@ -89,13 +89,17 @@ The skill is a thin wrapper over this CLI. Pass `--agent <name>` when prompted. 
 Organizations run TechDebtter unattended from a private controller repository. Copy `templates/controller-workflow.yml`, pin `uses:` lines to a reviewed full commit SHA, and configure:
 
 - Variables: `TECHDEBTTER_ORGANIZATION`
-- Secrets: `TECHDEBTTER_APP_ID`, `TECHDEBTTER_APP_INSTALLATION_ID`, `TECHDEBTTER_APP_PRIVATE_KEY`, plus a contents-read checkout token
+- Secrets: `TECHDEBTTER_APP_ID`, `TECHDEBTTER_APP_INSTALLATION_ID`, `TECHDEBTTER_APP_PRIVATE_KEY`
+  (checkout uses `actions/create-github-app-token` — no separate checkout token)
 
 Phases are separate jobs with fresh short-lived installation tokens:
 
 1. **discover** — list installation repositories
-2. **analyze** — read-only analysis of one target checkout
+2. **analyze** — read-only analysis of one target checkout (App token for checkout)
 3. **publish** — reconcile only evidence-verified Critical/High vulnerabilities by default
+4. **verify** — close Finding Issues whose fingerprints are absent from the latest Analysis Report
+
+CLI/Action also support **remediate** (open a draft remediation PR) and **observe** (promote a draft when required CI passes). Wire those as optional jobs when enabling autonomous remediation.
 
 ## Remediation (npm)
 

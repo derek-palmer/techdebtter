@@ -126,3 +126,30 @@ export function renderRemediationTerminal(result: RemediationResult): string {
   }
   return `${lines.join("\n")}\n`;
 }
+
+export function renderVerificationTerminal(result: {
+  closed: Array<{ issueNumber: number; issueUrl: string; findingFingerprint: string }>;
+  remaining: Array<{ issueNumber: number; issueUrl: string; findingFingerprint: string }>;
+  warnings: string[];
+}): string {
+  const lines: string[] = [
+    `Verification closed ${result.closed.length} issue(s); ${result.remaining.length} remain open.`,
+  ];
+  for (const entry of result.closed) {
+    lines.push(
+      `  closed #${entry.issueNumber} ${entry.findingFingerprint.slice(0, 12)} ${entry.issueUrl}`,
+    );
+  }
+  for (const entry of result.remaining) {
+    lines.push(
+      `  remaining #${entry.issueNumber} ${entry.findingFingerprint.slice(0, 12)} ${entry.issueUrl}`,
+    );
+  }
+  if (result.warnings.length > 0) {
+    lines.push("", "Warnings:");
+    for (const warning of result.warnings) {
+      lines.push(`- ${warning}`);
+    }
+  }
+  return `${lines.join("\n")}\n`;
+}
