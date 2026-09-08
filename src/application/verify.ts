@@ -79,3 +79,58 @@ export async function observeAndPromote(
     policy,
   );
 }
+
+export interface ObserveBatchResult {
+  results: Array<{
+    pullRequestNumber: number;
+    url: string;
+    result: RemediationResult;
+  }>;
+}
+
+/**
+ * Observe every open TechDebtter remediation PR and promote drafts whose
+ * required checks passed. Non-draft PRs are skipped.
+ */
+export async function observeOpenRemediationPullRequests(
+  snapshot: RepositorySnapshot,
+  gateway: RemediationGateway,
+  policy: Pick<EffectivePolicy, "remediation">,
+): Promise<ObserveBatchResult> {
+  const open = await gateway.listOpenRemediationPullRequests(snapshot);
+  const results: ObserveBatchResult["results"] = [];
+
+  for (const pull of open) {
+    if (!pull.draft) {
+      results.push({
+        pullRequestNumber: pull.number,
+        url: pull.url,
+        result: {
+          status: "promoted",
+          pullRequest: {
+            number: pull.number,
+            url: pull.url,
+            draft: false,
+          },
+          warnings: ["Pull request is already ready for review"],
+        },
+      });
+      continue;
+    }
+
+    const result = await observeRemediationPullRequest(
+      snapshot,
+      pull.number,
+      pull.headSha,
+      gateway,
+      policy,
+    );
+    results.push({
+      pullRequestNumber: pull.number,
+      url: pull.url,
+      result,
+    });
+  }
+
+  return { results };
+}

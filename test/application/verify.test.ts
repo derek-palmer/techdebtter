@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import {
   observeAndPromote,
+  observeOpenRemediationPullRequests,
   verifyRemediatedFindings,
 } from "../../src/application/verify.js";
 import { withReportHash } from "../../src/application/report-hash.js";
@@ -127,6 +128,63 @@ describe("observeAndPromote", () => {
 
     expect(result.status).toBe("promoted");
     expect(gateway.markPullRequestReady).toHaveBeenCalledOnce();
+  });
+});
+
+describe("observeOpenRemediationPullRequests", () => {
+  it("observes every open draft remediation PR", async () => {
+    const gateway: RemediationGateway = {
+      listOpenRemediationPullRequests: vi.fn(async () => [
+        {
+          number: 9,
+          url: "https://github.com/acme/api/pull/9",
+          draft: true,
+          headSha: "c".repeat(40),
+          title: "Upgrade lodash",
+          createdAt: "2026-09-07T00:00:00.000Z",
+          labels: ["techdebtter"],
+        },
+      ]),
+      getPullRequest: vi.fn(),
+      createDraftPullRequest: vi.fn(),
+      listCheckRuns: vi.fn(async () => [
+        {
+          name: "check",
+          status: "completed" as const,
+          conclusion: "success" as const,
+          required: true,
+        },
+      ]),
+      markPullRequestReady: vi.fn(async () => ({
+        number: 9,
+        url: "https://github.com/acme/api/pull/9",
+        draft: false,
+        headSha: "c".repeat(40),
+        title: "Upgrade lodash",
+        createdAt: "2026-09-07T00:00:00.000Z",
+        labels: ["techdebtter"],
+      })),
+    };
+
+    const batch = await observeOpenRemediationPullRequests(
+      {
+        owner: "acme",
+        repo: "api",
+        commitSha: "a".repeat(40),
+        dirty: false,
+      },
+      gateway,
+      {
+        remediation: {
+          ...productDefaults.remediation,
+          enabled: true,
+          allowed: true,
+        },
+      },
+    );
+
+    expect(batch.results).toHaveLength(1);
+    expect(batch.results[0]?.result.status).toBe("promoted");
   });
 });
 

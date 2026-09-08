@@ -21,10 +21,11 @@ import {
   filterDiscoveredRepositories,
   runBotAnalyze,
   runBotPublish,
+  runBotRemediate,
 } from "../application/bot.js";
-import { runRemediateFromReport } from "../application/run-remediate.js";
 import {
   observeAndPromote,
+  observeOpenRemediationPullRequests,
   verifyRemediatedFindings,
 } from "../application/verify.js";
 import { OctokitRemediationGateway } from "../adapters/remediation-github.js";
@@ -169,10 +170,6 @@ async function runPublishPhase(inputs: ActionInputs): Promise<void> {
 }
 
 async function runRemediatePhase(inputs: ActionInputs): Promise<void> {
-  if (!inputs.selectionId) {
-    throw new Error("selection-id is required for the remediate phase");
-  }
-
   const report = JSON.parse(
     await readFile(resolve(inputs.reportPath), "utf8"),
   ) as AnalysisReport;
@@ -182,66 +179,108 @@ async function runRemediatePhase(inputs: ActionInputs): Promise<void> {
     await policyGateway.readOrganizationPolicy(report.snapshot.owner),
   );
 
-  const { result } = await runRemediateFromReport({
+  const { selected, result } = await runBotRemediate(
     report,
-    selectionId: inputs.selectionId,
-    localPath: resolve(inputs.localPath),
-    gateway: new OctokitRemediationGateway({ octokit }),
-    policyLayers: {
+    {
+      organization: report.snapshot.owner,
+      repositories: [report.snapshot.repo],
+      localPath: resolve(inputs.localPath),
+      includeUncommitted: false,
+    },
+    {
+      gateway: new OctokitRemediationGateway({ octokit }),
+      clock: { now: () => new Date() },
+      ...(inputs.baseBranch ? { baseBranch: inputs.baseBranch } : {}),
+    },
+    {
       organization: organizationPolicy,
       repository: { state: "absent" },
     },
-    ...(inputs.baseBranch ? { baseBranch: inputs.baseBranch } : {}),
-  });
-
-  core.setOutput("status", result.status);
-  core.setOutput("result", JSON.stringify(result));
-  if (result.pullRequest) {
-    core.setOutput("pull-request-number", String(result.pullRequest.number));
-    core.setOutput("pull-request-url", result.pullRequest.url);
-    core.setOutput("draft", String(result.pullRequest.draft));
-  }
-  core.info(`Remediation status: ${result.status}`);
-}
-
-async function runObservePhase(inputs: ActionInputs): Promise<void> {
-  if (!inputs.repository || !inputs.pullRequestNumber) {
-    throw new Error("repository and pull-request-number are required for observe");
-  }
-  const pullNumber = Number(inputs.pullRequestNumber);
-  if (!Number.isInteger(pullNumber) || pullNumber <= 0) {
-    throw new Error(`Invalid pull-request-number: ${inputs.pullRequestNumber}`);
-  }
-
-  const [owner, repo] = splitRepository(inputs.repository);
-  const octokit = await resolveOctokit(inputs, "observe");
-  const result = await observeAndPromote(
-    {
-      owner,
-      repo,
-      commitSha: "0".repeat(40),
-      dirty: false,
-    },
-    pullNumber,
-    new OctokitRemediationGateway({ octokit }),
-    {
-      remediation: {
-        ...productDefaults.remediation,
-        enabled: true,
-        allowed: true,
-      },
-    },
-    inputs.headSha,
+    inputs.selectionId ? { selectionId: inputs.selectionId } : undefined,
   );
 
   core.setOutput("status", result.status);
   core.setOutput("result", JSON.stringify(result));
+  if (selected) {
+    core.setOutput("selected-count", "1");
+  } else {
+    core.setOutput("selected-count", "0");
+  }
   if (result.pullRequest) {
     core.setOutput("pull-request-number", String(result.pullRequest.number));
     core.setOutput("pull-request-url", result.pullRequest.url);
     core.setOutput("draft", String(result.pullRequest.draft));
   }
-  core.info(`Observe status: ${result.status}`);
+  core.info(
+    `Remediation status: ${result.status}${selected ? ` (selected ${selected})` : ""}`,
+  );
+}
+
+async function runObservePhase(inputs: ActionInputs): Promise<void> {
+  if (!inputs.repository) {
+    throw new Error("repository is required for observe");
+  }
+
+  const [owner, repo] = splitRepository(inputs.repository);
+  const snapshot = {
+    owner,
+    repo,
+    commitSha: "0".repeat(40),
+    dirty: false,
+  };
+  const octokit = await resolveOctokit(inputs, "observe");
+  const gateway = new OctokitRemediationGateway({ octokit });
+  const policy = {
+    remediation: {
+      ...productDefaults.remediation,
+      enabled: true,
+      allowed: true,
+    },
+  };
+
+  if (inputs.pullRequestNumber) {
+    const pullNumber = Number(inputs.pullRequestNumber);
+    if (!Number.isInteger(pullNumber) || pullNumber <= 0) {
+      throw new Error(`Invalid pull-request-number: ${inputs.pullRequestNumber}`);
+    }
+    const result = await observeAndPromote(
+      snapshot,
+      pullNumber,
+      gateway,
+      policy,
+      inputs.headSha,
+    );
+    core.setOutput("status", result.status);
+    core.setOutput("result", JSON.stringify(result));
+    if (result.pullRequest) {
+      core.setOutput("pull-request-number", String(result.pullRequest.number));
+      core.setOutput("pull-request-url", result.pullRequest.url);
+      core.setOutput("draft", String(result.pullRequest.draft));
+    }
+    core.info(`Observe status: ${result.status}`);
+    return;
+  }
+
+  const batch = await observeOpenRemediationPullRequests(
+    snapshot,
+    gateway,
+    policy,
+  );
+  core.setOutput("result", JSON.stringify(batch));
+  core.setOutput("observed-count", String(batch.results.length));
+  const promoted = batch.results.filter(
+    (entry) => entry.result.status === "promoted",
+  );
+  core.setOutput("status", promoted.length > 0 ? "promoted" : "awaiting-ci");
+  if (batch.results.length === 1 && batch.results[0]?.result.pullRequest) {
+    const only = batch.results[0].result.pullRequest;
+    core.setOutput("pull-request-number", String(only.number));
+    core.setOutput("pull-request-url", only.url);
+    core.setOutput("draft", String(only.draft));
+  }
+  core.info(
+    `Observed ${batch.results.length} remediation PR(s); promoted ${promoted.length}`,
+  );
 }
 
 async function runVerifyPhase(inputs: ActionInputs): Promise<void> {

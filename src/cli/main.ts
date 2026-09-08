@@ -15,6 +15,7 @@ import { RemediationError } from "../application/remediation-error.js";
 import type { RemediateDependencies } from "../application/remediate.js";
 import {
   observeAndPromote,
+  observeOpenRemediationPullRequests,
   verifyRemediatedFindings,
 } from "../application/verify.js";
 import { productDefaults } from "../domain/policy.js";
@@ -36,6 +37,7 @@ import {
   renderRemediationTerminal,
   renderTerminal,
   renderVerificationTerminal,
+  renderObserveBatchTerminal,
 } from "./render.js";
 
 export interface CliIo {
@@ -141,11 +143,13 @@ export async function runCli(
 
   program
     .command("observe")
-    .description("Observe a remediation draft PR and promote when required CI passes")
+    .description(
+      "Observe remediation draft PR(s) and promote when required CI passes",
+    )
     .requiredOption("--owner <owner>", "Repository owner")
     .requiredOption("--repo <repo>", "Repository name")
-    .requiredOption("--pull <number>", "Pull request number")
-    .option("--head-sha <sha>", "Optional head commit SHA override")
+    .option("--pull <number>", "Single pull request number (default: all open TechDebtter PRs)")
+    .option("--head-sha <sha>", "Optional head commit SHA override (single --pull only)")
     .option("--format <format>", "Output format", "terminal")
     .action(async (flags: ObserveFlags) => {
       exitCode = await runObserveCommand(flags, options, io);
@@ -194,7 +198,7 @@ interface RemediateFlags {
 interface ObserveFlags {
   owner: string;
   repo: string;
-  pull: string;
+  pull?: string;
   headSha?: string;
   format?: string;
 }
@@ -444,12 +448,6 @@ async function runObserveCommand(
     return EXIT_INVALID;
   }
 
-  const pullNumber = Number(flags.pull);
-  if (!Number.isInteger(pullNumber) || pullNumber <= 0) {
-    writeStructuredError(io.stderr, `Invalid pull request number: ${flags.pull}`, "invalid-pull");
-    return EXIT_INVALID;
-  }
-
   try {
     const gateway =
       options.observeGateway ??
@@ -468,29 +466,54 @@ async function runObserveCommand(
       return EXIT_OPERATIONAL;
     }
 
-    const result = await observeAndPromote(
-      {
-        owner: flags.owner,
-        repo: flags.repo,
-        commitSha: "0".repeat(40),
-        dirty: false,
+    const snapshot = {
+      owner: flags.owner,
+      repo: flags.repo,
+      commitSha: "0".repeat(40),
+      dirty: false,
+    };
+    const policy = {
+      remediation: {
+        ...productDefaults.remediation,
+        enabled: true,
+        allowed: true,
       },
-      pullNumber,
-      gateway,
-      {
-        remediation: {
-          ...productDefaults.remediation,
-          enabled: true,
-          allowed: true,
-        },
-      },
-      flags.headSha,
-    );
+    };
 
+    if (flags.pull) {
+      const pullNumber = Number(flags.pull);
+      if (!Number.isInteger(pullNumber) || pullNumber <= 0) {
+        writeStructuredError(
+          io.stderr,
+          `Invalid pull request number: ${flags.pull}`,
+          "invalid-pull",
+        );
+        return EXIT_INVALID;
+      }
+      const result = await observeAndPromote(
+        snapshot,
+        pullNumber,
+        gateway,
+        policy,
+        flags.headSha,
+      );
+      const rendered =
+        format === "json"
+          ? `${JSON.stringify(result, null, 2)}\n`
+          : renderRemediationTerminal(result);
+      io.stdout.write(rendered);
+      return EXIT_SUCCESS;
+    }
+
+    const batch = await observeOpenRemediationPullRequests(
+      snapshot,
+      gateway,
+      policy,
+    );
     const rendered =
       format === "json"
-        ? `${JSON.stringify(result, null, 2)}\n`
-        : renderRemediationTerminal(result);
+        ? `${JSON.stringify(batch, null, 2)}\n`
+        : renderObserveBatchTerminal(batch);
     io.stdout.write(rendered);
     return EXIT_SUCCESS;
   } catch (error) {

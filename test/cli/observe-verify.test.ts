@@ -84,6 +84,84 @@ describe("runCli observe and verify", () => {
     expect(gateway.markPullRequestReady).toHaveBeenCalledOnce();
   });
 
+  it("observe without --pull scans all open remediation PRs", async () => {
+    const gateway: RemediationGateway = {
+      listOpenRemediationPullRequests: vi.fn(async () => [
+        {
+          number: 9,
+          url: "https://github.com/acme/api/pull/9",
+          draft: true,
+          headSha: "c".repeat(40),
+          title: "Upgrade lodash",
+          createdAt: "2026-09-07T00:00:00.000Z",
+          labels: ["techdebtter"],
+        },
+      ]),
+      getPullRequest: vi.fn(),
+      createDraftPullRequest: vi.fn(),
+      listCheckRuns: vi.fn(async () => [
+        {
+          name: "check",
+          status: "completed" as const,
+          conclusion: "success" as const,
+          required: true,
+        },
+      ]),
+      markPullRequestReady: vi.fn(async () => ({
+        number: 9,
+        url: "https://github.com/acme/api/pull/9",
+        draft: false,
+        headSha: "c".repeat(40),
+        title: "Upgrade lodash",
+        createdAt: "2026-09-07T00:00:00.000Z",
+        labels: ["techdebtter"],
+      })),
+    };
+
+    const captured = captureIo();
+    const exitCode = await runCli(
+      [
+        "node",
+        "techdebtter",
+        "observe",
+        "--owner",
+        "acme",
+        "--repo",
+        "api",
+        "--format",
+        "json",
+      ],
+      {
+        dependencies: {
+          repositorySource: {
+            async snapshot() {
+              return {
+                owner: "acme",
+                repo: "api",
+                commitSha: "a".repeat(40),
+                dirty: false,
+              };
+            },
+          },
+          detectors: [],
+          enrichmentProviders: [],
+          readOrganizationPolicy: async () => ({ state: "absent" }),
+          readRepositoryPolicy: async () => ({ state: "absent" }),
+          clock: { now: () => new Date("2026-09-07T00:00:00.000Z") },
+        },
+        observeGateway: gateway,
+        io: captured.io,
+      },
+    );
+
+    expect(exitCode).toBe(EXIT_SUCCESS);
+    const batch = JSON.parse(captured.stdout) as {
+      results: Array<{ result: { status: string } }>;
+    };
+    expect(batch.results).toHaveLength(1);
+    expect(batch.results[0]?.result.status).toBe("promoted");
+  });
+
   it("verify closes Finding Issues absent from the report", async () => {
     const report = withReportHash({
       schemaVersion: "1.0.0",

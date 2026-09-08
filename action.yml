@@ -24,17 +24,17 @@ inputs:
     description: Optional comma-separated repository names to include during discover
     required: false
   selection-id:
-    description: Finding selection ID for the remediate phase
+    description: "Optional Finding selection ID for remediate (default: highest Criticality eligible Finding)"
     required: false
   base-branch:
     description: Pull request base branch for remediate
     required: false
     default: main
   pull-request-number:
-    description: Pull request number for the observe phase
+    description: "Optional PR number for observe (default: all open TechDebtter remediation PRs)"
     required: false
   head-sha:
-    description: Optional head SHA override for observe
+    description: Optional head SHA override for single-PR observe
     required: false
   app-id:
     description: GitHub App ID used to mint phase-scoped installation tokens
@@ -80,6 +80,8 @@ outputs:
     description: Verify closed Finding Issue count
   remaining-count:
     description: Verify remaining open Finding Issue count
+  observed-count:
+    description: Observe batch size when scanning all open remediation PRs
 
 runs:
   using: node24

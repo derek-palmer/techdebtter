@@ -68,7 +68,7 @@ T1–T7 first-line delivery slices are complete.
 
 - `OctokitRemediationGateway` creates draft PRs from static mutations, lists budget-eligible PRs, observes required checks, and promotes drafts
 - CLI `techdebtter remediate` and Action phase `remediate` (contents + pull_requests write only in that phase)
-- CLI/Action `observe` promotes draft remediation PRs after required CI passes
+- CLI/Action `observe` promotes draft remediation PRs after required CI passes (single PR or all open drafts)
 - CLI/Action `verify` closes Finding Issues absent from a fresh Analysis Report (merge alone is never proof)
-- Controller template pins Action SHAs, mints App tokens for checkout, and runs discover → analyze → publish + verify
+- Controller template pins Action SHAs, mints App tokens for checkout, runs discover → analyze → publish + verify, and optionally remediate + observe
 

@@ -42,17 +42,32 @@ describe("bot controller action and template", () => {
       "analyze",
       "publish",
       "verify",
+      "remediate",
+      "observe",
     ]);
 
     const phases = Object.values(workflow.jobs)
       .flatMap((job) => job.steps ?? [])
       .map((step) => step.with?.phase)
       .filter(Boolean);
-    expect(phases).toEqual(["discover", "analyze", "publish", "verify"]);
+    expect(phases).toEqual([
+      "discover",
+      "analyze",
+      "publish",
+      "verify",
+      "remediate",
+      "observe",
+    ]);
 
     expect(workflow.jobs.analyze?.needs).toBe("discover");
     expect(workflow.jobs.publish?.needs).toEqual(["discover", "analyze"]);
     expect(workflow.jobs.verify?.needs).toEqual(["discover", "analyze"]);
+    expect(workflow.jobs.remediate?.needs).toEqual([
+      "discover",
+      "analyze",
+      "publish",
+    ]);
+    expect(workflow.jobs.observe?.needs).toEqual(["discover"]);
 
     const pinnedUses = Object.values(workflow.jobs)
       .flatMap((job) => job.steps ?? [])
@@ -64,5 +79,6 @@ describe("bot controller action and template", () => {
     const text = readFileSync(join(root, "templates/controller-workflow.yml"), "utf8");
     expect(text).toContain("actions/create-github-app-token");
     expect(text).toContain("token: ${{ steps.app-token.outputs.token }}");
+    expect(text).toContain("TECHDEBTTER_ENABLE_REMEDIATION");
   });
 });

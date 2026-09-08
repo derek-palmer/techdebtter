@@ -153,3 +153,24 @@ export function renderVerificationTerminal(result: {
   }
   return `${lines.join("\n")}\n`;
 }
+
+export function renderObserveBatchTerminal(batch: {
+  results: Array<{
+    pullRequestNumber: number;
+    url: string;
+    result: RemediationResult;
+  }>;
+}): string {
+  const lines: string[] = [
+    `Observed ${batch.results.length} remediation pull request(s).`,
+  ];
+  for (const entry of batch.results) {
+    lines.push(
+      `  #${entry.pullRequestNumber} ${entry.result.status} ${entry.url}`,
+    );
+    for (const warning of entry.result.warnings) {
+      lines.push(`    - ${warning}`);
+    }
+  }
+  return `${lines.join("\n")}\n`;
+}
