@@ -46,6 +46,18 @@ export class OctokitRemediationGateway implements RemediationGateway {
       .map((pull) => toPullRequestRecord(pull));
   }
 
+  async getPullRequest(
+    snapshot: RepositorySnapshot,
+    pullRequestNumber: number,
+  ): Promise<PullRequestRecord> {
+    const { data: pull } = await this.octokit.rest.pulls.get({
+      owner: snapshot.owner,
+      repo: snapshot.repo,
+      pull_number: pullRequestNumber,
+    });
+    return toPullRequestRecord(pull);
+  }
+
   async createDraftPullRequest(
     snapshot: RepositorySnapshot,
     input: {

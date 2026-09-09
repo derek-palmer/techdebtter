@@ -28,6 +28,8 @@ describe("runCli capabilities", () => {
       "capabilities",
       "publish",
       "remediate",
+      "observe",
+      "verify",
     ]);
     expect(payload.detectors).toEqual(["trivy-vulnerability"]);
     expect(payload.publicationSupported).toBe(true);

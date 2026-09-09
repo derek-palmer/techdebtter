@@ -69,6 +69,10 @@ export interface RemediationGateway {
   listOpenRemediationPullRequests(
     snapshot: RepositorySnapshot,
   ): Promise<PullRequestRecord[]>;
+  getPullRequest(
+    snapshot: RepositorySnapshot,
+    pullRequestNumber: number,
+  ): Promise<PullRequestRecord>;
   createDraftPullRequest(
     snapshot: RepositorySnapshot,
     input: {

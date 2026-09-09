@@ -21,12 +21,18 @@ import {
   filterDiscoveredRepositories,
   runBotAnalyze,
   runBotPublish,
+  runBotRemediate,
 } from "../application/bot.js";
-import { runRemediateFromReport } from "../application/run-remediate.js";
+import {
+  observeAndPromote,
+  observeOpenRemediationPullRequests,
+  verifyRemediatedFindings,
+} from "../application/verify.js";
 import { OctokitRemediationGateway } from "../adapters/remediation-github.js";
 import type { AnalyzeDependencies } from "../application/analyze.js";
 import type { AnalysisReport } from "../domain/model.js";
 import {
+  productDefaults,
   validatePolicy,
   type OrganizationPolicy,
   type PolicyLayerState,
@@ -41,6 +47,8 @@ export interface ActionInputs {
   includeRepositories?: string[];
   selectionId?: string;
   baseBranch?: string;
+  pullRequestNumber?: string;
+  headSha?: string;
   appId?: string;
   installationId?: string;
   privateKey?: string;
@@ -60,6 +68,12 @@ export async function runAction(inputs: ActionInputs): Promise<void> {
       return;
     case "remediate":
       await runRemediatePhase(inputs);
+      return;
+    case "observe":
+      await runObservePhase(inputs);
+      return;
+    case "verify":
+      await runVerifyPhase(inputs);
       return;
     default: {
       const _exhaustive: never = inputs.phase;
@@ -156,10 +170,6 @@ async function runPublishPhase(inputs: ActionInputs): Promise<void> {
 }
 
 async function runRemediatePhase(inputs: ActionInputs): Promise<void> {
-  if (!inputs.selectionId) {
-    throw new Error("selection-id is required for the remediate phase");
-  }
-
   const report = JSON.parse(
     await readFile(resolve(inputs.reportPath), "utf8"),
   ) as AnalysisReport;
@@ -169,26 +179,125 @@ async function runRemediatePhase(inputs: ActionInputs): Promise<void> {
     await policyGateway.readOrganizationPolicy(report.snapshot.owner),
   );
 
-  const { result } = await runRemediateFromReport({
+  const { selected, result } = await runBotRemediate(
     report,
-    selectionId: inputs.selectionId,
-    localPath: resolve(inputs.localPath),
-    gateway: new OctokitRemediationGateway({ octokit }),
-    policyLayers: {
+    {
+      organization: report.snapshot.owner,
+      repositories: [report.snapshot.repo],
+      localPath: resolve(inputs.localPath),
+      includeUncommitted: false,
+    },
+    {
+      gateway: new OctokitRemediationGateway({ octokit }),
+      clock: { now: () => new Date() },
+      ...(inputs.baseBranch ? { baseBranch: inputs.baseBranch } : {}),
+    },
+    {
       organization: organizationPolicy,
       repository: { state: "absent" },
     },
-    ...(inputs.baseBranch ? { baseBranch: inputs.baseBranch } : {}),
-  });
+    inputs.selectionId ? { selectionId: inputs.selectionId } : undefined,
+  );
 
   core.setOutput("status", result.status);
   core.setOutput("result", JSON.stringify(result));
+  if (selected) {
+    core.setOutput("selected-count", "1");
+  } else {
+    core.setOutput("selected-count", "0");
+  }
   if (result.pullRequest) {
     core.setOutput("pull-request-number", String(result.pullRequest.number));
     core.setOutput("pull-request-url", result.pullRequest.url);
     core.setOutput("draft", String(result.pullRequest.draft));
   }
-  core.info(`Remediation status: ${result.status}`);
+  core.info(
+    `Remediation status: ${result.status}${selected ? ` (selected ${selected})` : ""}`,
+  );
+}
+
+async function runObservePhase(inputs: ActionInputs): Promise<void> {
+  if (!inputs.repository) {
+    throw new Error("repository is required for observe");
+  }
+
+  const [owner, repo] = splitRepository(inputs.repository);
+  const snapshot = {
+    owner,
+    repo,
+    commitSha: "0".repeat(40),
+    dirty: false,
+  };
+  const octokit = await resolveOctokit(inputs, "observe");
+  const gateway = new OctokitRemediationGateway({ octokit });
+  const policy = {
+    remediation: {
+      ...productDefaults.remediation,
+      enabled: true,
+      allowed: true,
+    },
+  };
+
+  if (inputs.pullRequestNumber) {
+    const pullNumber = Number(inputs.pullRequestNumber);
+    if (!Number.isInteger(pullNumber) || pullNumber <= 0) {
+      throw new Error(`Invalid pull-request-number: ${inputs.pullRequestNumber}`);
+    }
+    const result = await observeAndPromote(
+      snapshot,
+      pullNumber,
+      gateway,
+      policy,
+      inputs.headSha,
+    );
+    core.setOutput("status", result.status);
+    core.setOutput("result", JSON.stringify(result));
+    if (result.pullRequest) {
+      core.setOutput("pull-request-number", String(result.pullRequest.number));
+      core.setOutput("pull-request-url", result.pullRequest.url);
+      core.setOutput("draft", String(result.pullRequest.draft));
+    }
+    core.info(`Observe status: ${result.status}`);
+    return;
+  }
+
+  const batch = await observeOpenRemediationPullRequests(
+    snapshot,
+    gateway,
+    policy,
+  );
+  core.setOutput("result", JSON.stringify(batch));
+  core.setOutput("observed-count", String(batch.results.length));
+  const promoted = batch.results.filter(
+    (entry) => entry.result.status === "promoted",
+  );
+  core.setOutput("status", promoted.length > 0 ? "promoted" : "awaiting-ci");
+  if (batch.results.length === 1 && batch.results[0]?.result.pullRequest) {
+    const only = batch.results[0].result.pullRequest;
+    core.setOutput("pull-request-number", String(only.number));
+    core.setOutput("pull-request-url", only.url);
+    core.setOutput("draft", String(only.draft));
+  }
+  core.info(
+    `Observed ${batch.results.length} remediation PR(s); promoted ${promoted.length}`,
+  );
+}
+
+async function runVerifyPhase(inputs: ActionInputs): Promise<void> {
+  const report = JSON.parse(
+    await readFile(resolve(inputs.reportPath), "utf8"),
+  ) as AnalysisReport;
+  const octokit = await resolveOctokit(inputs, "verify");
+  const result = await verifyRemediatedFindings(
+    report,
+    new OctokitGitHubGateway({ octokit }),
+  );
+  core.setOutput("closed-count", String(result.closed.length));
+  core.setOutput("remaining-count", String(result.remaining.length));
+  core.setOutput("result", JSON.stringify(result));
+  core.info(
+    `Verification closed ${result.closed.length}; ${result.remaining.length} remain`,
+  );
 }
 
 function createAnalyzeDependencies(
@@ -267,14 +376,25 @@ function repositoryName(fullName: string): string {
   return parts[parts.length - 1] ?? fullName;
 }
 
+function splitRepository(fullName: string): [string, string] {
+  const [owner, repo] = fullName.split("/");
+  if (!owner || !repo) {
+    throw new Error(`Invalid repository: ${fullName}`);
+  }
+  return [owner, repo];
+}
+
 function readInputsFromEnv(): ActionInputs {
   const phase = requiredInput("phase") as BotPhase;
-  if (
-    phase !== "discover" &&
-    phase !== "analyze" &&
-    phase !== "publish" &&
-    phase !== "remediate"
-  ) {
+  const allowed: BotPhase[] = [
+    "discover",
+    "analyze",
+    "publish",
+    "remediate",
+    "observe",
+    "verify",
+  ];
+  if (!allowed.includes(phase)) {
     throw new Error(`Unsupported phase: ${phase}`);
   }
 
@@ -303,6 +423,14 @@ function readInputsFromEnv(): ActionInputs {
   const baseBranch = optionalInput("base-branch");
   if (baseBranch) {
     inputs.baseBranch = baseBranch;
+  }
+  const pullRequestNumber = optionalInput("pull-request-number");
+  if (pullRequestNumber) {
+    inputs.pullRequestNumber = pullRequestNumber;
+  }
+  const headSha = optionalInput("head-sha");
+  if (headSha) {
+    inputs.headSha = headSha;
   }
   const appId = optionalInput("app-id");
   if (appId) {

@@ -13,6 +13,14 @@ import { PublishError } from "../application/publish-error.js";
 import { runRemediateFromReport } from "../application/run-remediate.js";
 import { RemediationError } from "../application/remediation-error.js";
 import type { RemediateDependencies } from "../application/remediate.js";
+import {
+  observeAndPromote,
+  observeOpenRemediationPullRequests,
+  verifyRemediatedFindings,
+} from "../application/verify.js";
+import { productDefaults } from "../domain/policy.js";
+import type { FindingVerificationGateway } from "../domain/ports.js";
+import type { RemediationGateway } from "../domain/remediation.js";
 import { PolicyError } from "../domain/policy-error.js";
 import type { AnalysisReport, Criticality, OperatingScope } from "../domain/model.js";
 import {
@@ -28,6 +36,8 @@ import {
   renderPublicationTerminal,
   renderRemediationTerminal,
   renderTerminal,
+  renderVerificationTerminal,
+  renderObserveBatchTerminal,
 } from "./render.js";
 
 export interface CliIo {
@@ -46,6 +56,10 @@ export interface RunCliOptions {
   createRemediateDependencies?: () => Promise<
     NonNullable<RunCliOptions["remediateDependencies"]>
   >;
+  observeGateway?: RemediationGateway;
+  createObserveGateway?: () => Promise<RemediationGateway>;
+  verifyGateway?: FindingVerificationGateway;
+  createVerifyGateway?: () => Promise<FindingVerificationGateway>;
   io?: CliIo;
   confirm?: (summary: string) => Promise<boolean>;
 }
@@ -84,7 +98,14 @@ export async function runCli(
       const payload = {
         cliVersion: PACKAGE_VERSION,
         reportSchemaVersions: [REPORT_SCHEMA_VERSION],
-        commands: ["analyze", "capabilities", "publish", "remediate"],
+        commands: [
+          "analyze",
+          "capabilities",
+          "publish",
+          "remediate",
+          "observe",
+          "verify",
+        ],
         detectors: ["trivy-vulnerability"],
         publicationSupported: true,
         remediationSupported: true,
@@ -120,6 +141,31 @@ export async function runCli(
       exitCode = await runRemediateCommand(reportPath, flags, options, io);
     });
 
+  program
+    .command("observe")
+    .description(
+      "Observe remediation draft PR(s) and promote when required CI passes",
+    )
+    .requiredOption("--owner <owner>", "Repository owner")
+    .requiredOption("--repo <repo>", "Repository name")
+    .option("--pull <number>", "Single pull request number (default: all open TechDebtter PRs)")
+    .option("--head-sha <sha>", "Optional head commit SHA override (single --pull only)")
+    .option("--format <format>", "Output format", "terminal")
+    .action(async (flags: ObserveFlags) => {
+      exitCode = await runObserveCommand(flags, options, io);
+    });
+
+  program
+    .command("verify")
+    .description(
+      "Close Finding Issues absent from a fresh Analysis Report after merge",
+    )
+    .argument("<report>", "Path to a post-merge analysis report JSON file")
+    .option("--format <format>", "Output format", "terminal")
+    .action(async (reportPath: string, flags: VerifyFlags) => {
+      exitCode = await runVerifyCommand(reportPath, flags, options, io);
+    });
+
   try {
     await program.parseAsync(argv);
     return exitCode;
@@ -147,6 +193,18 @@ interface RemediateFlags {
   baseBranch?: string;
   format?: string;
   yes?: boolean;
+}
+
+interface ObserveFlags {
+  owner: string;
+  repo: string;
+  pull?: string;
+  headSha?: string;
+  format?: string;
+}
+
+interface VerifyFlags {
+  format?: string;
 }
 
 async function runAnalyzeCommand(
@@ -379,6 +437,142 @@ async function runRemediateCommand(
   }
 }
 
+async function runObserveCommand(
+  flags: ObserveFlags,
+  options: RunCliOptions,
+  io: CliIo,
+): Promise<number> {
+  const format = flags.format ?? "terminal";
+  if (!["terminal", "json"].includes(format)) {
+    writeStructuredError(io.stderr, `Unsupported format: ${format}`, "invalid-format");
+    return EXIT_INVALID;
+  }
+
+  try {
+    const gateway =
+      options.observeGateway ??
+      (options.createObserveGateway
+        ? await options.createObserveGateway()
+        : options.remediateDependencies?.gateway ??
+          (options.createRemediateDependencies
+            ? (await options.createRemediateDependencies()).gateway
+            : undefined));
+    if (!gateway) {
+      writeStructuredError(
+        io.stderr,
+        "Observe dependencies are not configured",
+        "not-configured",
+      );
+      return EXIT_OPERATIONAL;
+    }
+
+    const snapshot = {
+      owner: flags.owner,
+      repo: flags.repo,
+      commitSha: "0".repeat(40),
+      dirty: false,
+    };
+    const policy = {
+      remediation: {
+        ...productDefaults.remediation,
+        enabled: true,
+        allowed: true,
+      },
+    };
+
+    if (flags.pull) {
+      const pullNumber = Number(flags.pull);
+      if (!Number.isInteger(pullNumber) || pullNumber <= 0) {
+        writeStructuredError(
+          io.stderr,
+          `Invalid pull request number: ${flags.pull}`,
+          "invalid-pull",
+        );
+        return EXIT_INVALID;
+      }
+      const result = await observeAndPromote(
+        snapshot,
+        pullNumber,
+        gateway,
+        policy,
+        flags.headSha,
+      );
+      const rendered =
+        format === "json"
+          ? `${JSON.stringify(result, null, 2)}\n`
+          : renderRemediationTerminal(result);
+      io.stdout.write(rendered);
+      return EXIT_SUCCESS;
+    }
+
+    const batch = await observeOpenRemediationPullRequests(
+      snapshot,
+      gateway,
+      policy,
+    );
+    const rendered =
+      format === "json"
+        ? `${JSON.stringify(batch, null, 2)}\n`
+        : renderObserveBatchTerminal(batch);
+    io.stdout.write(rendered);
+    return EXIT_SUCCESS;
+  } catch (error) {
+    return mapErrorToExitCode(error, io);
+  }
+}
+
+async function runVerifyCommand(
+  reportPath: string,
+  flags: VerifyFlags,
+  options: RunCliOptions,
+  io: CliIo,
+): Promise<number> {
+  const format = flags.format ?? "terminal";
+  if (!["terminal", "json"].includes(format)) {
+    writeStructuredError(io.stderr, `Unsupported format: ${format}`, "invalid-format");
+    return EXIT_INVALID;
+  }
+
+  let report: AnalysisReport;
+  try {
+    const raw = await readFile(resolve(reportPath), "utf8");
+    report = JSON.parse(raw) as AnalysisReport;
+  } catch (error) {
+    writeStructuredError(
+      io.stderr,
+      error instanceof Error ? error.message : "Failed to read analysis report",
+      "invalid-report",
+    );
+    return EXIT_INVALID;
+  }
+
+  try {
+    const gateway =
+      options.verifyGateway ??
+      (options.createVerifyGateway
+        ? await options.createVerifyGateway()
+        : undefined);
+    if (!gateway) {
+      writeStructuredError(
+        io.stderr,
+        "Verify dependencies are not configured",
+        "not-configured",
+      );
+      return EXIT_OPERATIONAL;
+    }
+
+    const result = await verifyRemediatedFindings(report, gateway);
+    const rendered =
+      format === "json"
+        ? `${JSON.stringify(result, null, 2)}\n`
+        : renderVerificationTerminal(result);
+    io.stdout.write(rendered);
+    return EXIT_SUCCESS;
+  } catch (error) {
+    return mapErrorToExitCode(error, io);
+  }
+}
+
 function scopeFromReport(report: AnalysisReport): OperatingScope {
   return {
     organization: report.snapshot.owner,
@@ -469,11 +663,15 @@ if (import.meta.url === entryPath) {
     createDefaultAnalyzeDependencies,
     createDefaultPublishDependencies,
     createDefaultRemediateDependencies,
+    createDefaultVerifyDependencies,
   } = await import("./bootstrap.js");
   const exitCode = await runCli(process.argv, {
     dependencies: createDefaultAnalyzeDependencies(),
     createPublishDependencies: createDefaultPublishDependencies,
     createRemediateDependencies: createDefaultRemediateDependencies,
+    createObserveGateway: async () =>
+      (await createDefaultRemediateDependencies()).gateway,
+    createVerifyGateway: createDefaultVerifyDependencies,
   });
   process.exitCode = exitCode;
 }

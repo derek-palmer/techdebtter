@@ -17,6 +17,7 @@ export type {
   Clock,
   Detector,
   EnrichmentProvider,
+  FindingVerificationGateway,
   GitHubGateway,
   RepositorySource,
 } from "./domain/ports.js";
@@ -128,12 +129,13 @@ export {
   renderTerminal,
 } from "./cli/render.js";
 
-export { selectUnattendedFindings, selectionIds } from "./application/unattended-select.js";
+export { selectUnattendedFindings, selectUnattendedRemediationFinding, selectionIds } from "./application/unattended-select.js";
 
 export {
   filterDiscoveredRepositories,
   runBotAnalyze,
   runBotPublish,
+  runBotRemediate,
 } from "./application/bot.js";
 
 export {
@@ -204,6 +206,17 @@ export {
   observeRemediationPullRequest,
   remediate,
 } from "./application/remediate.js";
+
+export {
+  observeAndPromote,
+  observeOpenRemediationPullRequests,
+  verifyRemediatedFindings,
+} from "./application/verify.js";
+
+export type {
+  ObserveBatchResult,
+  VerificationResult,
+} from "./application/verify.js";
 
 export { runRemediateFromReport } from "./application/run-remediate.js";
 

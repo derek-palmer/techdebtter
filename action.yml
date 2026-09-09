@@ -4,7 +4,7 @@ author: TechDebtter
 
 inputs:
   phase:
-    description: Bot phase to run (discover | analyze | publish | remediate)
+    description: Bot phase to run (discover | analyze | publish | remediate | observe | verify)
     required: true
   organization:
     description: Runtime-selected GitHub Organization
@@ -14,7 +14,7 @@ inputs:
     required: false
     default: "."
   report-path:
-    description: Analysis report JSON path (analyze writes; publish/remediate read)
+    description: Analysis report JSON path (analyze writes; publish/remediate/verify read)
     required: false
     default: techdebtter-report.json
   repository:
@@ -24,12 +24,18 @@ inputs:
     description: Optional comma-separated repository names to include during discover
     required: false
   selection-id:
-    description: Finding selection ID for the remediate phase
+    description: "Optional Finding selection ID for remediate (default: highest Criticality eligible Finding)"
     required: false
   base-branch:
     description: Pull request base branch for remediate
     required: false
     default: main
+  pull-request-number:
+    description: "Optional PR number for observe (default: all open TechDebtter remediation PRs)"
+    required: false
+  head-sha:
+    description: Optional head SHA override for single-PR observe
+    required: false
   app-id:
     description: GitHub App ID used to mint phase-scoped installation tokens
     required: false
@@ -61,15 +67,21 @@ outputs:
   published-count:
     description: Publish reconciled issue count
   result:
-    description: PublicationResult or RemediationResult JSON
+    description: PublicationResult, RemediationResult, or VerificationResult JSON
   status:
-    description: Remediate status
+    description: Remediate/observe status
   pull-request-number:
-    description: Remediate draft PR number
+    description: Remediate/observe draft PR number
   pull-request-url:
-    description: Remediate draft PR URL
+    description: Remediate/observe draft PR URL
   draft:
     description: Whether the remediation PR remains draft
+  closed-count:
+    description: Verify closed Finding Issue count
+  remaining-count:
+    description: Verify remaining open Finding Issue count
+  observed-count:
+    description: Observe batch size when scanning all open remediation PRs
 
 runs:
   using: node24

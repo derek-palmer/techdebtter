@@ -2,10 +2,12 @@ import { describe, expect, it } from "vitest";
 import { withReportHash } from "../../src/application/report-hash.js";
 import {
   selectUnattendedFindings,
+  selectUnattendedRemediationFinding,
   selectionIds,
 } from "../../src/application/unattended-select.js";
 import type { AnalysisReport, Finding } from "../../src/domain/model.js";
 import type { EffectivePolicy } from "../../src/domain/policy.js";
+import type { Remediator } from "../../src/domain/remediation.js";
 
 const baseFinding: Finding = {
   selectionId: "abc123def456",
@@ -26,6 +28,11 @@ const baseFinding: Finding = {
       value: "fixture-hash",
     },
   ],
+  packageEcosystem: "npm",
+  packageName: "lodash",
+  installedVersion: "4.17.21",
+  fixedVersions: ["4.17.22"],
+  target: "package-lock.json",
 };
 
 describe("selectUnattendedFindings", () => {
@@ -95,6 +102,58 @@ describe("selectUnattendedFindings", () => {
   });
 });
 
+describe("selectUnattendedRemediationFinding", () => {
+  const supportingRemediator: Remediator = {
+    id: "fixture-remediator",
+    supports: (finding) => finding.packageName === "lodash",
+    plan: async () => {
+      throw new Error("not used");
+    },
+  };
+
+  it("picks the highest-Criticality ready-for-agent Finding with a Remediator", () => {
+    const report = makeReport([
+      {
+        ...baseFinding,
+        selectionId: "highfinding01",
+        effectiveCriticality: "high",
+        calculatedCriticality: "high",
+      },
+      baseFinding,
+    ]);
+
+    const selected = selectUnattendedRemediationFinding(
+      report,
+      remediationPolicy(true),
+      [supportingRemediator],
+    );
+    expect(selected?.selectionId).toBe("abc123def456");
+  });
+
+  it("returns undefined when remediation is disabled", () => {
+    const report = makeReport([baseFinding]);
+    expect(
+      selectUnattendedRemediationFinding(report, remediationPolicy(false), [
+        supportingRemediator,
+      ]),
+    ).toBeUndefined();
+  });
+
+  it("skips Findings without a supporting Remediator", () => {
+    const report = makeReport([baseFinding]);
+    const none: Remediator = {
+      id: "none",
+      supports: () => false,
+      plan: async () => {
+        throw new Error("not used");
+      },
+    };
+    expect(
+      selectUnattendedRemediationFinding(report, remediationPolicy(true), [none]),
+    ).toBeUndefined();
+  });
+});
+
 function allowedPolicy(
   minimum: EffectivePolicy["publication"]["unattendedMinimumCriticality"],
 ): Pick<EffectivePolicy, "publication"> {
@@ -102,6 +161,24 @@ function allowedPolicy(
     publication: {
       unattendedMinimumCriticality: minimum,
       allowed: true,
+    },
+  };
+}
+
+function remediationPolicy(
+  enabled: boolean,
+): Pick<EffectivePolicy, "publication" | "remediation"> {
+  return {
+    publication: {
+      unattendedMinimumCriticality: "high",
+      allowed: true,
+    },
+    remediation: {
+      enabled,
+      allowed: true,
+      maxOpenPullRequests: 1,
+      minHoursBetweenPullRequests: 24,
+      allowStaticOnlyPromotion: false,
     },
   };
 }

@@ -6,8 +6,14 @@ import type { PublishDependencies } from "./publish.js";
 import { publish } from "./publish.js";
 import {
   selectUnattendedFindings,
+  selectUnattendedRemediationFinding,
   selectionIds,
 } from "./unattended-select.js";
+import {
+  remediate,
+  type RemediateDependencies,
+  type RemediationResult,
+} from "./remediate.js";
 import type {
   AnalysisReport,
   OperatingScope,
@@ -21,6 +27,7 @@ import {
   type RepositoryPolicy,
 } from "../domain/policy.js";
 import type { InstallationRepository } from "../adapters/github-app-auth.js";
+import { createDefaultRemediators } from "../adapters/remediators.js";
 
 export interface DiscoverResult {
   organization: string;
@@ -35,6 +42,11 @@ export interface BotAnalyzeResult {
 export interface BotPublishResult {
   selected: string[];
   result: PublicationResult;
+}
+
+export interface BotRemediateResult {
+  selected?: string;
+  result: RemediationResult;
 }
 
 export function filterDiscoveredRepositories(
@@ -109,4 +121,69 @@ export async function runBotPublish(
 
   const result = await publish(report, selected, scope, dependencies);
   return { selected, result };
+}
+
+/**
+ * Unattended remediation: pick the highest-Criticality eligible Finding
+ * (or an explicit selection) and open at most one draft PR within budget.
+ */
+export async function runBotRemediate(
+  report: AnalysisReport,
+  scope: OperatingScope,
+  dependencies: Pick<RemediateDependencies, "gateway" | "clock"> & {
+    baseBranch?: string;
+  },
+  policyLayers: {
+    organization: PolicyLayerState<OrganizationPolicy>;
+    repository: PolicyLayerState<RepositoryPolicy>;
+  },
+  options?: { selectionId?: string },
+): Promise<BotRemediateResult> {
+  const policy = resolvePolicy(
+    productDefaults,
+    policyLayers.organization,
+    policyLayers.repository,
+  );
+  const remediators = createDefaultRemediators();
+
+  const finding = options?.selectionId
+    ? report.findings.find((entry) => entry.selectionId === options.selectionId)
+    : selectUnattendedRemediationFinding(report, policy, remediators);
+
+  if (!finding) {
+    return {
+      result: {
+        status: "unsupported",
+        warnings: options?.selectionId
+          ? [`Unknown selection ID: ${options.selectionId}`]
+          : [
+              "No ready-for-agent Finding eligible for unattended remediation",
+            ],
+      },
+    };
+  }
+
+  if (!report.reproducible || !report.policy.verified) {
+    return {
+      selected: finding.selectionId,
+      result: {
+        status: "unsupported",
+        warnings: [
+          !report.reproducible
+            ? "Non-reproducible reports cannot be remediated"
+            : "Organization policy is unverifiable; remediation is blocked",
+        ],
+      },
+    };
+  }
+
+  const result = await remediate(finding, scope, report.snapshot, {
+    remediators,
+    gateway: dependencies.gateway,
+    policy,
+    clock: dependencies.clock,
+    ...(dependencies.baseBranch ? { baseBranch: dependencies.baseBranch } : {}),
+  });
+
+  return { selected: finding.selectionId, result };
 }

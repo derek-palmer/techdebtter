@@ -21,12 +21,18 @@ describe("bot controller action and template", () => {
     expect(action.inputs["private-key"]).toBeDefined();
   });
 
-  it("keeps discover, analyze, and publish as separate jobs", () => {
+  it("keeps discover, analyze, publish, and verify as separate jobs", () => {
     const workflow = parseYaml(
       readFileSync(join(root, "templates/controller-workflow.yml"), "utf8"),
     ) as {
       on: { schedule: unknown; workflow_dispatch: unknown };
-      jobs: Record<string, { steps?: Array<{ uses?: string; with?: Record<string, string> }> }>;
+      jobs: Record<
+        string,
+        {
+          needs?: string | string[];
+          steps?: Array<{ uses?: string; with?: Record<string, string> }>;
+        }
+      >;
     };
 
     expect(workflow.on.schedule).toBeDefined();
@@ -35,26 +41,44 @@ describe("bot controller action and template", () => {
       "discover",
       "analyze",
       "publish",
+      "verify",
+      "remediate",
+      "observe",
     ]);
 
     const phases = Object.values(workflow.jobs)
       .flatMap((job) => job.steps ?? [])
       .map((step) => step.with?.phase)
       .filter(Boolean);
-    expect(phases).toEqual(["discover", "analyze", "publish"]);
+    expect(phases).toEqual([
+      "discover",
+      "analyze",
+      "publish",
+      "verify",
+      "remediate",
+      "observe",
+    ]);
+
+    expect(workflow.jobs.analyze?.needs).toBe("discover");
+    expect(workflow.jobs.publish?.needs).toEqual(["discover", "analyze"]);
+    expect(workflow.jobs.verify?.needs).toEqual(["discover", "analyze"]);
+    expect(workflow.jobs.remediate?.needs).toEqual([
+      "discover",
+      "analyze",
+      "publish",
+    ]);
+    expect(workflow.jobs.observe?.needs).toEqual(["discover"]);
 
     const pinnedUses = Object.values(workflow.jobs)
       .flatMap((job) => job.steps ?? [])
       .map((step) => step.uses)
       .filter((value): value is string => Boolean(value));
-    expect(
-      pinnedUses.every(
-        (value) =>
-          value.includes("@") &&
-          (value.includes("REPLACE_WITH_FULL_COMMIT_SHA") ||
-            /@[0-9a-f]{40}/i.test(value) ||
-            value.includes(" # ")),
-      ),
-    ).toBe(true);
+    expect(pinnedUses.length).toBeGreaterThan(0);
+    expect(pinnedUses.every((value) => /@[0-9a-f]{40}/i.test(value))).toBe(true);
+
+    const text = readFileSync(join(root, "templates/controller-workflow.yml"), "utf8");
+    expect(text).toContain("actions/create-github-app-token");
+    expect(text).toContain("token: ${{ steps.app-token.outputs.token }}");
+    expect(text).toContain("TECHDEBTTER_ENABLE_REMEDIATION");
   });
 });

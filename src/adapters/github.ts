@@ -8,7 +8,7 @@ import type {
   RemediationRoute,
   RepositorySnapshot,
 } from "../domain/model.js";
-import type { GitHubGateway } from "../domain/ports.js";
+import type { GitHubGateway, FindingVerificationGateway } from "../domain/ports.js";
 
 const METADATA_MARKER = "techdebtter-metadata";
 const METADATA_VERSION = "1.0.0";
@@ -79,7 +79,7 @@ export interface OctokitGitHubGatewayOptions {
   now?: () => string;
 }
 
-export class OctokitGitHubGateway implements GitHubGateway {
+export class OctokitGitHubGateway implements GitHubGateway, FindingVerificationGateway {
   private readonly octokit: Octokit;
   private readonly labelMap: Record<string, string>;
   private readonly now: () => string;
@@ -170,6 +170,59 @@ export class OctokitGitHubGateway implements GitHubGateway {
       labels,
       matchingIssue,
     );
+  }
+
+  async listOpenFindingIssues(
+    snapshot: RepositorySnapshot,
+  ): Promise<
+    Array<{
+      issueNumber: number;
+      issueUrl: string;
+      findingFingerprint: string;
+    }>
+  > {
+    const issues = await listTechDebtterIssues(
+      this.octokit,
+      snapshot.owner,
+      snapshot.repo,
+    );
+    const open: Array<{
+      issueNumber: number;
+      issueUrl: string;
+      findingFingerprint: string;
+    }> = [];
+    for (const issue of issues) {
+      if (issue.state !== "open") {
+        continue;
+      }
+      const metadata = parseMetadata(issue.body);
+      if (!metadata) {
+        continue;
+      }
+      open.push({
+        issueNumber: issue.number,
+        issueUrl: issue.html_url,
+        findingFingerprint: metadata.findingFingerprint,
+      });
+    }
+    return open;
+  }
+
+  async closeIssueAsRemediated(
+    snapshot: RepositorySnapshot,
+    issueNumber: number,
+  ): Promise<{ issueNumber: number; issueUrl: string }> {
+    const response = await this.octokit.rest.issues.update({
+      owner: snapshot.owner,
+      repo: snapshot.repo,
+      issue_number: issueNumber,
+      state: "closed",
+      state_reason: "completed",
+    });
+    return {
+      issueNumber: response.data.number,
+      issueUrl: response.data.html_url,
+    };
   }
 
   private async createIssue(

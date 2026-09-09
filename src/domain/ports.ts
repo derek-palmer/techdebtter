@@ -38,6 +38,22 @@ export interface GitHubGateway {
   ): Promise<PublicationResult["published"][number]>;
 }
 
+export interface FindingVerificationGateway {
+  listOpenFindingIssues(
+    snapshot: RepositorySnapshot,
+  ): Promise<
+    Array<{
+      issueNumber: number;
+      issueUrl: string;
+      findingFingerprint: string;
+    }>
+  >;
+  closeIssueAsRemediated(
+    snapshot: RepositorySnapshot,
+    issueNumber: number,
+  ): Promise<{ issueNumber: number; issueUrl: string }>;
+}
+
 export interface Cache {
   get(key: string): Promise<{ storedAt: string; value: string } | undefined>;
   set(key: string, value: string, storedAt: string): Promise<void>;
