@@ -3,15 +3,10 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { Octokit } from "@octokit/rest";
 import { activeGhToken } from "../adapters/gh-auth.js";
-import { LocalGitRepositorySource } from "../adapters/git.js";
 import { OctokitGitHubGateway } from "../adapters/github.js";
 import { OctokitRemediationGateway } from "../adapters/remediation-github.js";
-import { readRepositoryPolicyFile } from "../adapters/local-policy.js";
-import { FileSystemCache } from "../adapters/fs-cache.js";
-import { CisaKevProvider } from "../adapters/kev.js";
-import { FirstEpssProvider } from "../adapters/epss.js";
 import { execProcessRunner } from "../adapters/process.js";
-import { TrivyVulnerabilityDetector } from "../adapters/trivy.js";
+import { createAnalyzeDependencies } from "../wiring/dependency-wiring.js";
 import type { AnalyzeDependencies } from "../application/analyze.js";
 import type { PublishDependencies } from "../application/publish.js";
 import type { RemediateDependencies } from "../application/remediate.js";
@@ -21,20 +16,11 @@ let defaultCacheRoot: string | undefined;
 export function createDefaultAnalyzeDependencies(): AnalyzeDependencies {
   const cacheRoot = defaultCacheRoot ?? join(tmpdir(), "techdebtter-cache");
   defaultCacheRoot = cacheRoot;
-  const cache = new FileSystemCache(cacheRoot);
-  const clock = { now: () => new Date() };
 
-  return {
-    repositorySource: new LocalGitRepositorySource(),
-    detectors: [new TrivyVulnerabilityDetector()],
-    enrichmentProviders: [
-      new CisaKevProvider(cache, clock, fetch),
-      new FirstEpssProvider(fetch),
-    ],
+  return createAnalyzeDependencies({
+    cacheRoot,
     readOrganizationPolicy: async () => ({ state: "unverifiable" }),
-    readRepositoryPolicy: readRepositoryPolicyFile,
-    clock,
-  };
+  });
 }
 
 export async function createDefaultPublishDependencies(): Promise<PublishDependencies> {

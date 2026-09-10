@@ -102,12 +102,13 @@ Complex Findings may be handed to `to-issues` for child tickets. The integration
 
 ## External ports
 
-The core owns Triage, policy resolution, grouping, fingerprints, Criticality, reconciliation, and report generation. Volatile boundaries use six ports:
+The core owns Triage, policy resolution, grouping, fingerprints, Criticality, reconciliation, and report generation. Volatile boundaries use seven ports:
 
 - `RepositorySource`: immutable Repository Snapshot
 - `Detector`: evidence-bearing Detections
 - `EnrichmentProvider`: timestamped external facts
 - `GitHubGateway`: policy reads and GitHub reconciliation
+- `FindingVerificationGateway`: lists open Finding Issues and closes them as remediated once a fresh Analysis Report shows the finding fingerprint is gone
 - `Cache`: disposable acceleration only
 - `Clock`: deterministic cadence and expiry
 
