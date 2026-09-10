@@ -1,0 +1,15 @@
+{
+  "stage_slug": "reverse-engineering",
+  "space": "default",
+  "intent": "260909-techdebt-remediation-age",
+  "selections": [
+    {
+      "candidate_id": "c1",
+      "type": "learning",
+      "scope": "project",
+      "heading": "Corrections",
+      "text": "When dispatching a code scan or similar research agent, hand it the specific open questions carried from prior stages so it verifies them directly rather than independently re-deriving the same finding.",
+      "source": "orchestrator"
+    }
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "stage": "code-generation",
+  "unit": null,
+  "upstream_ids": [
+    "FR1.1", "FR1.2", "FR1.3",
+    "FR2.1", "FR2.2",
+    "FR3.1", "FR3.2",
+    "FR4.1",
+    "FR5.1", "FR5.2",
+    "NFR1", "NFR2",
+    "NFR2.1", "NFR2.2", "NFR2.3", "NFR2.4", "NFR2.5", "NFR2.6", "NFR2.7",
+    "BR1.1", "BR1.2"
+  ],
+  "coverage": [
+    { "id": "FR1.1", "status": "OK", "target": "README.md (opening description rewritten to single-detector Trivy scope)" },
+    { "id": "FR1.2", "status": "OK", "target": "README.md (eight-category language moved to new 'Roadmap / Vision' section)" },
+    { "id": "FR1.3", "status": "OK", "target": "README.md Usage section (observe/verify subcommand documentation added)" },
+    { "id": "FR2.1", "status": "OK", "target": "SPEC.md I9 (FindingVerificationGateway added to the external-ports list)" },
+    { "id": "FR2.2", "status": "OK", "target": "docs/architecture.md External ports section (FindingVerificationGateway added; six -> seven ports)" },
+    { "id": "FR3.1", "status": "OK", "target": "SPEC.md C10 investigation recorded: no scheduled smoke-test workflow is committed under .github/workflows/ (only ci.yml, push/pull_request-triggered); existence outside the repository (GitHub Settings UI) could not be checked from within the repository and requires a human with repo-admin access — recorded as the investigation's finding in code-summary.md" },
+    { "id": "FR3.2", "status": "OK", "target": "SPEC.md C10 (one-line 'unverified from within the repository as of this pass' note added; disposition = recorded as deferred work, no speculative workflow built and no claim asserted false, per FR3.1's inconclusive finding and NFR2's no-new-capability constraint)" },
+    { "id": "FR4.1", "status": "OK", "target": "src/wiring/dependency-wiring.ts (new); src/cli/bootstrap.ts createDefaultAnalyzeDependencies and src/action/main.ts createAnalyzeDependencies both call the shared factory; BR1.1, BR1.2 (rules.md's pre-existing, unchanged remediate-path and analyze-path policy-source divergences are preserved verbatim by the extraction)" },
+    { "id": "FR5.1", "status": "OK", "target": "test/verification/no-mutation.test.ts (NFR2.1), test/cli/analyze-dirty-worktree.test.ts (NFR2.2), test/domain/policy.test.ts extension (NFR2.3), code review of src/adapters/process.ts (NFR2.4, recorded in code-summary.md), test/wiring/dependency-wiring.test.ts + test/cli/bootstrap.test.ts + test/action/main.test.ts (NFR2.5), test/workflows/ci-pinning.test.ts (NFR2.6), code review of src/adapters/ai.ts call sites (NFR2.7, recorded in code-summary.md)" },
+    { "id": "FR5.2", "status": "OK", "target": "code-summary.md (verification results per invariant, pass/fail, recorded)" },
+    { "id": "NFR1", "status": "N/A", "target": "no coverage gate configured this pass, per requirements.md's explicit deferral; no code artifact" },
+    { "id": "NFR2", "status": "OK", "target": "no public contract, schema, or dependency-set change: DependencyWiring is a pure internal extraction (verified by regression-equivalence tests and unchanged tsc/vitest/lint surface); action.yml and package.json dependencies untouched" },
+    { "id": "NFR2.1", "status": "OK", "target": "test/verification/no-mutation.test.ts" },
+    { "id": "NFR2.2", "status": "OK", "target": "test/cli/analyze-dirty-worktree.test.ts" },
+    { "id": "NFR2.3", "status": "OK", "target": "test/domain/policy.test.ts (policy-presence resolution matrix describe block)" },
+    { "id": "NFR2.4", "status": "OK", "target": "code review of src/adapters/process.ts's three execa call sites (git.ts, trivy.ts, gh-auth.ts) — recorded in code-summary.md; no new test per security-design.md's corrected premise" },
+    { "id": "NFR2.5", "status": "OK", "target": "test/wiring/dependency-wiring.test.ts, test/cli/bootstrap.test.ts, test/action/main.test.ts" },
+    { "id": "NFR2.6", "status": "OK", "target": "test/workflows/ci-pinning.test.ts" },
+    { "id": "NFR2.7", "status": "OK", "target": "code review confirming src/adapters/ai.ts's gate remains uncalled by any application use-case — recorded in code-summary.md; no new test per security-design.md's corrected premise" },
+    { "id": "BR1.1", "status": "OK", "target": "src/cli/bootstrap.ts createDefaultRemediateDependencies and src/action/main.ts runRemediatePhase — untouched by this pass, remediate-path policy-source divergence preserved as documented" },
+    { "id": "BR1.2", "status": "OK", "target": "src/wiring/dependency-wiring.ts (readOrganizationPolicy supplied by each entry point unchanged; test/wiring/dependency-wiring.test.ts asserts both CLI-stub and Action-live-read forms are preserved as-is)" }
+  ],
+  "reverse": []
+}

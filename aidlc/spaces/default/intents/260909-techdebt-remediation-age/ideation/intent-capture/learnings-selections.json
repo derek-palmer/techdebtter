@@ -1,0 +1,47 @@
+{
+  "stage_slug": "intent-capture",
+  "space": "default",
+  "intent": "260909-techdebt-remediation-age",
+  "selections": [
+    {
+      "candidate_id": "c1",
+      "type": "learning",
+      "scope": "project",
+      "heading": "Corrections",
+      "text": "When a later answer changes content the human already confirmed, supersede rather than edit: append the new question as a numbered follow-up, mark the superseded answer as superseded, and re-run the consolidated summary and its confirmation receipt before rewriting any artifact.",
+      "source": "orchestrator"
+    },
+    {
+      "candidate_id": "c2",
+      "type": "learning",
+      "scope": "project",
+      "heading": "Corrections",
+      "text": "In a stage questions file, keep every numbered question section before the consolidated summary and put the single Assumption Confirmation section last, because the confirmed-content digest treats any other visible heading after the summary as invalid.",
+      "source": "orchestrator"
+    },
+    {
+      "candidate_id": "c4",
+      "type": "learning",
+      "scope": "project",
+      "heading": "Corrections",
+      "text": "When a human answers a structured question with substantive free text rather than a listed option, treat it as their final answer and resolve any remaining ambiguity with narrow follow-up questions, instead of re-opening the original question.",
+      "source": "orchestrator"
+    },
+    {
+      "candidate_id": "c5",
+      "type": "learning",
+      "scope": "project",
+      "heading": "Corrections",
+      "text": "The `aidlc engine review-brief summary` command fails in this build with \"aidlc-review-brief.ts does not export main(argv)\"; present the consolidated summary directly in chat and still record the summary-confirmation decision and answer receipts.",
+      "source": "orchestrator"
+    },
+    {
+      "candidate_id": "c3",
+      "type": "learning",
+      "scope": "project",
+      "heading": "Corrections",
+      "text": "Track outstanding work as GitHub issues rather than as a backlog kept inside the repository's own documents.",
+      "source": "user_addition"
+    }
+  ]
+}

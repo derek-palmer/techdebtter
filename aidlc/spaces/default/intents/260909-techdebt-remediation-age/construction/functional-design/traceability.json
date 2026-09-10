@@ -1,0 +1,18 @@
+{
+  "stage": "functional-design",
+  "unit": "n/a (no units-generation this pass)",
+  "upstream_ids": ["FR1.1", "FR1.2", "FR1.3", "FR2.1", "FR2.2", "FR3.1", "FR3.2", "FR4.1", "FR5.1", "FR5.2"],
+  "coverage": [
+    { "id": "FR1.1", "status": "N/A", "target": "documentation-only; no functional-design workflow or rule" },
+    { "id": "FR1.2", "status": "N/A", "target": "documentation-only; no functional-design workflow or rule" },
+    { "id": "FR1.3", "status": "N/A", "target": "documentation-only; no functional-design workflow or rule" },
+    { "id": "FR2.1", "status": "N/A", "target": "documentation-only; no functional-design workflow or rule" },
+    { "id": "FR2.2", "status": "N/A", "target": "documentation-only; no functional-design workflow or rule" },
+    { "id": "FR3.1", "status": "N/A", "target": "investigation step; no functional-design workflow or rule" },
+    { "id": "FR3.2", "status": "N/A", "target": "provisional: disposition depends on FR3.1's still-pending investigation; if the 'build' disposition is chosen, a scheduled CI workflow is infrastructure configuration, not domain/business logic, so functional-design coverage is still not expected even then" },
+    { "id": "FR4.1", "status": "OK", "target": "BR1.1, BR1.2 (rules.md now holds two rules documenting the pre-existing, unchanged remediate-path and analyze-path policy-source divergences that DependencyWiring must preserve)" },
+    { "id": "FR5.1", "status": "N/A", "target": "verifies existing SPEC.md invariants (V1-V30); not a new workflow or rule" },
+    { "id": "FR5.2", "status": "N/A", "target": "verification record-keeping; not a new workflow or rule" }
+  ],
+  "reverse": []
+}
