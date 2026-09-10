@@ -15,7 +15,7 @@ Continuously turn concrete repository debt into prioritized, auditable GitHub wo
 - C7: GitHub Issues authoritative Finding backlog; local reports/caches disposable.
 - C8: Initial Bot database-free: scheduled/manual GitHub Actions + GitHub App auth + GitHub-native state.
 - C9: No telemetry by default. Never upload source, secrets, credentials, or full raw detector output.
-- C10: All deterministic tests/checks block `main`; live external smoke tests scheduled, non-blocking. (Unverified from within the repository as of this pass: no scheduled smoke-test workflow is committed under `.github/workflows/`; whether an equivalent schedule exists outside the repository — e.g. GitHub Settings → Actions → Scheduled workflows, or an org-level workflow — requires a human with repo-admin access to check and was not confirmed or refuted during this pass.)
+- C10: All deterministic tests/checks block `main`; live external smoke tests scheduled, non-blocking. (Confirmed 2026-09-10: no scheduled smoke-test workflow exists — no `schedule:` trigger in any committed workflow, and a repo-admin checked GitHub Settings → Actions → Scheduled workflows and found none there either. The scheduled-smoke-test half of C10 is unimplemented, not merely unverified; deterministic tests/checks blocking `main` remains satisfied via `ci.yml`.)
 - C11: No executable dependency, optional skill, or upgrade installs without user approval.
 - C12: Initial implementation = one npm package; split only for independently versioned consumer.
 
