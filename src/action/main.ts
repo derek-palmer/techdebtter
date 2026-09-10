@@ -10,13 +10,8 @@ import {
   type BotPhase,
   type GitHubAppCredentials,
 } from "../adapters/github-app-auth.js";
-import { LocalGitRepositorySource } from "../adapters/git.js";
 import { OctokitGitHubGateway } from "../adapters/github.js";
-import { FileSystemCache } from "../adapters/fs-cache.js";
-import { CisaKevProvider } from "../adapters/kev.js";
-import { FirstEpssProvider } from "../adapters/epss.js";
-import { readRepositoryPolicyFile } from "../adapters/local-policy.js";
-import { TrivyVulnerabilityDetector } from "../adapters/trivy.js";
+import { createAnalyzeDependencies as wireAnalyzeDependencies } from "../wiring/dependency-wiring.js";
 import {
   filterDiscoveredRepositories,
   runBotAnalyze,
@@ -300,26 +295,16 @@ async function runVerifyPhase(inputs: ActionInputs): Promise<void> {
   );
 }
 
-function createAnalyzeDependencies(
+export function createAnalyzeDependencies(
   gateway: OctokitGitHubGateway,
 ): AnalyzeDependencies {
-  const cache = new FileSystemCache("/tmp/techdebtter-action-cache");
-  const clock = { now: () => new Date() };
-
-  return {
-    repositorySource: new LocalGitRepositorySource(),
-    detectors: [new TrivyVulnerabilityDetector()],
-    enrichmentProviders: [
-      new CisaKevProvider(cache, clock, fetch),
-      new FirstEpssProvider(fetch),
-    ],
+  return wireAnalyzeDependencies({
+    cacheRoot: "/tmp/techdebtter-action-cache",
     readOrganizationPolicy: async (organization) => {
       const layer = await gateway.readOrganizationPolicy(organization);
       return parseOrganizationPolicy(layer);
     },
-    readRepositoryPolicy: readRepositoryPolicyFile,
-    clock,
-  };
+  });
 }
 
 function parseOrganizationPolicy(layer: {

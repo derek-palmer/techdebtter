@@ -11,6 +11,8 @@ export default defineConfig(
       "tsup.config.ts",
       "vitest.config.ts",
       "eslint.config.js",
+      ".claude/**",
+      "aidlc/**",
     ],
   },
   eslint.configs.recommended,

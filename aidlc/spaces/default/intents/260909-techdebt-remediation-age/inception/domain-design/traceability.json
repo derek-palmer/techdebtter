@@ -1,0 +1,25 @@
+{
+  "stage": "domain-design",
+  "upstream_ids": [
+    "FR1.1", "FR1.2", "FR1.3",
+    "FR2.1", "FR2.2",
+    "FR3.1", "FR3.2",
+    "FR4.1",
+    "FR5.1", "FR5.2",
+    "FR6.1", "FR6.2"
+  ],
+  "coverage": [
+    { "id": "FR1.1", "status": "OK", "target": "N/A (documentation-only correction; no component realizes README prose)" },
+    { "id": "FR1.2", "status": "OK", "target": "N/A (documentation-only correction; no component realizes README prose)" },
+    { "id": "FR1.3", "status": "OK", "target": "CLI" },
+    { "id": "FR2.1", "status": "OK", "target": "Domain Model & Policy" },
+    { "id": "FR2.2", "status": "OK", "target": "Domain Model & Policy" },
+    { "id": "FR3.1", "status": "OK", "target": "N/A (investigation step; no component realizes it)" },
+    { "id": "FR3.2", "status": "OK", "target": "N/A (disposition depends on FR3.1's finding; not a component change)" },
+    { "id": "FR4.1", "status": "OK", "target": "DependencyWiring" },
+    { "id": "FR5.1", "status": "OK", "target": "CLI, GitHub Action Controller, Ecosystem Remediator Adapters, Domain Model & Policy" },
+    { "id": "FR5.2", "status": "OK", "target": "N/A (verification record-keeping; no component realizes it)" },
+    { "id": "FR6.1", "status": "OK", "target": "N/A (external fixture repository, not a component in this codebase)" },
+    { "id": "FR6.2", "status": "OK", "target": "N/A (local toolchain confirmation, not a component in this codebase)" }
+  ]
+}

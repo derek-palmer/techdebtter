@@ -15,7 +15,7 @@ Continuously turn concrete repository debt into prioritized, auditable GitHub wo
 - C7: GitHub Issues authoritative Finding backlog; local reports/caches disposable.
 - C8: Initial Bot database-free: scheduled/manual GitHub Actions + GitHub App auth + GitHub-native state.
 - C9: No telemetry by default. Never upload source, secrets, credentials, or full raw detector output.
-- C10: All deterministic tests/checks block `main`; live external smoke tests scheduled, non-blocking.
+- C10: All deterministic tests/checks block `main`; live external smoke tests scheduled, non-blocking. (Unverified from within the repository as of this pass: no scheduled smoke-test workflow is committed under `.github/workflows/`; whether an equivalent schedule exists outside the repository — e.g. GitHub Settings → Actions → Scheduled workflows, or an org-level workflow — requires a human with repo-admin access to check and was not confirmed or refuted during this pass.)
 - C11: No executable dependency, optional skill, or upgrade installs without user approval.
 - C12: Initial implementation = one npm package; split only for independently versioned consumer.
 
@@ -29,7 +29,7 @@ Continuously turn concrete repository debt into prioritized, auditable GitHub wo
 - I6: Root Repository Policy `.techdebtter.yml`; Organization Policy `ORG/.github/.techdebtter.yml`; optional `$schema`.
 - I7: Versioned JSON Analysis Report = canonical automation contract; terminal/Markdown = derived views.
 - I8: Finding Issue = human body + labels + hidden versioned metadata.
-- I9: External ports: `RepositorySource`, `Detector`, `EnrichmentProvider`, `GitHubGateway`, `Cache`, `Clock`.
+- I9: External ports: `RepositorySource`, `Detector`, `EnrichmentProvider`, `GitHubGateway`, `FindingVerificationGateway`, `Cache`, `Clock`.
 - I10: User skill `skills/techdebtter/SKILL.md`; thin wrapper over CLI, installable through skills.sh.
 - I11: Privileged controller workflow in one private org repository; reusable TechDebtter Action pinned by full SHA.
 

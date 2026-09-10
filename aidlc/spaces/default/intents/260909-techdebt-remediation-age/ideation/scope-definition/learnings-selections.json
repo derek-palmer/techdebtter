@@ -1,0 +1,39 @@
+{
+  "stage_slug": "scope-definition",
+  "space": "default",
+  "intent": "260909-techdebt-remediation-age",
+  "selections": [
+    {
+      "candidate_id": "c2",
+      "type": "learning",
+      "scope": "project",
+      "heading": "Corrections",
+      "text": "Before writing a stage's questions, read the project's specifications, build scripts, and code surface, so the options name real decisions in this codebase rather than generic prompts.",
+      "source": "orchestrator"
+    },
+    {
+      "candidate_id": "c1",
+      "type": "learning",
+      "scope": "project",
+      "heading": "Corrections",
+      "text": "When two project documents disagree about what the product currently does, treat resolving the disagreement as an explicit decision for the human rather than as a defect to fix silently.",
+      "source": "orchestrator"
+    },
+    {
+      "candidate_id": "c5",
+      "type": "learning",
+      "scope": "project",
+      "heading": "Corrections",
+      "text": "Sequence documentation correction after verification work, so a current-versus-planned split can be written from what verification actually established rather than from expectation.",
+      "source": "orchestrator"
+    },
+    {
+      "candidate_id": "c3",
+      "type": "learning",
+      "scope": "project",
+      "heading": "Corrections",
+      "text": "Treat a stage file's listed questions as reference topics rather than a script, and add the questions a specific pass's boundaries actually require.",
+      "source": "orchestrator"
+    }
+  ]
+}

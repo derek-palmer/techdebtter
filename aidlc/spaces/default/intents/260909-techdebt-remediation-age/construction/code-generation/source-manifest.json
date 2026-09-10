@@ -1,0 +1,20 @@
+{
+  "stage": "code-generation",
+  "unit": null,
+  "version": 1,
+  "writes": [
+    { "path": "README.md" },
+    { "path": "SPEC.md" },
+    { "path": "docs/architecture.md" },
+    { "path": "src/wiring/dependency-wiring.ts" },
+    { "path": "src/cli/bootstrap.ts" },
+    { "path": "src/action/main.ts" },
+    { "path": "test/wiring/dependency-wiring.test.ts" },
+    { "path": "test/cli/bootstrap.test.ts" },
+    { "path": "test/action/main.test.ts" },
+    { "path": "test/verification/no-mutation.test.ts" },
+    { "path": "test/cli/analyze-dirty-worktree.test.ts" },
+    { "path": "test/domain/policy.test.ts" },
+    { "path": "test/workflows/ci-pinning.test.ts" }
+  ]
+}

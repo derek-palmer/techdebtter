@@ -1,0 +1,15 @@
+{
+  "stage_slug": "approval-handoff",
+  "space": "default",
+  "intent": "260909-techdebt-remediation-age",
+  "selections": [
+    {
+      "candidate_id": "c2",
+      "type": "learning",
+      "scope": "project",
+      "heading": "Corrections",
+      "text": "When a human chooses to mitigate a flagged risk before proceeding, run the actual check inline (install, test, typecheck, or equivalent) rather than recording the risk as still-open or deferred.",
+      "source": "orchestrator"
+    }
+  ]
+}

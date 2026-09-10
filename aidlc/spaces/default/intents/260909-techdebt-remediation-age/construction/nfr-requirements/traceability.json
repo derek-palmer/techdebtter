@@ -1,0 +1,9 @@
+{
+  "stage": "nfr-requirements",
+  "unit": "n/a (no units-generation this pass)",
+  "upstream_ids": ["NFR1", "NFR2"],
+  "coverage": [
+    { "id": "NFR1", "status": "N/A", "target": "no coverage gate this pass; not a performance/security/scalability/reliability/observability target this stage covers" },
+    { "id": "NFR2", "status": "OK", "target": "NFR2.1, NFR2.2, NFR2.3, NFR2.4, NFR2.5, NFR2.6, NFR2.7 (security-requirements.md); also satisfied by performance/scalability/reliability/observability/tech-stack-decisions.md each stating no new targets this pass" }
+  ]
+}

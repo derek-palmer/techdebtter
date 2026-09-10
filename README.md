@@ -1,22 +1,29 @@
 ## TechDebtter
 
-TechDebtter is an AI-powered technical-debt remediation agent for software engineering teams.
-
-It continuously evaluates repositories and engineering workflows for maintainability risks, including dependency drift, security-related upgrades, deprecated APIs, fragile tests, stale CI/CD workflows, infrastructure-as-code debt, documentation gaps, and repetitive code-quality issues.
-
-TechDebtter prioritizes findings using impact, risk, confidence, scope, and estimated remediation effort. For high-confidence changes, it can generate scoped remediation plans, create issues, and open reviewable pull requests with validation and rollback guidance.
+TechDebtter is a vulnerability detection and remediation agent for software engineering teams. Today it deterministically scans a local repository checkout with a single detector, [Trivy](https://trivy.dev/), enriches findings with CISA KEV and FIRST EPSS data, prioritizes them using impact, risk, confidence, scope, and estimated remediation effort, and lets a human publish selected findings as GitHub Finding Issues. For direct dependencies in npm, Python, Docker, Ruby, and Terraform manifests it can also open a reviewable, draft remediation pull request with static-only edits (no target lifecycle scripts).
 
 The goal is simple: make technical debt visible, actionable, and steadily smaller without adding unnecessary work to the engineering backlog.
 
 ## Project status
 
-The first tracer slice delivers deterministic local vulnerability analysis and user-selected GitHub Finding Issue publication.
+The first tracer slice delivers deterministic local vulnerability analysis (single detector: Trivy), user-selected GitHub Finding Issue publication, and static draft remediation PRs across five package-manifest ecosystems (npm, Python, Docker, Ruby, Terraform).
 
 - [Specification](SPEC.md)
 - [Architecture](docs/architecture.md)
 - [Domain language](CONTEXT.md)
 - [Architecture decisions](docs/adr/)
 - [Implementation plan](docs/implementation-plan.md)
+
+## Roadmap / Vision
+
+Beyond today's single-detector (Trivy vulnerability) scope, TechDebtter's
+longer-term vision is a broader technical-debt agent whose *detection*
+side also evaluates dependency drift, deprecated APIs, fragile tests,
+stale CI/CD workflows, infrastructure-as-code debt, documentation gaps,
+and repetitive code-quality issues — each surfaced, prioritized, and
+remediated the way Trivy vulnerability findings are today. None of that
+detection breadth beyond Trivy is implemented yet; this section describes
+direction, not current capability.
 
 ## Prerequisites
 
@@ -61,6 +68,18 @@ techdebtter remediate /tmp/report.json --select <selection-id> --path . --yes
 ```
 
 Omit `--yes` in an interactive terminal to review the intended issue writes before confirming. In non-interactive environments, `--yes` is required.
+
+Observe a remediation draft PR (or all open TechDebtter PRs) and promote it once required CI passes:
+
+```bash
+techdebtter observe --owner <owner> --repo <repo> --pull <number>
+```
+
+Close Finding Issues whose fingerprints are absent from a fresh, post-merge analysis report:
+
+```bash
+techdebtter verify /tmp/post-merge-report.json
+```
 
 Inspect CLI capabilities for skill or automation negotiation:
 

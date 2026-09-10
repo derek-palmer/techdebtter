@@ -1,0 +1,14 @@
+{
+  "stage": "nfr-design",
+  "unit": "n/a (no units-generation this pass)",
+  "upstream_ids": ["NFR2.1", "NFR2.2", "NFR2.3", "NFR2.4", "NFR2.5", "NFR2.6", "NFR2.7"],
+  "coverage": [
+    { "id": "NFR2.1", "status": "OK", "target": "security-design.md verification-design table row NFR2.1 (test/application/analyze.test.ts or test/verification/no-mutation.test.ts)" },
+    { "id": "NFR2.2", "status": "OK", "target": "security-design.md verification-design table row NFR2.2 (test/cli/analyze-dirty-worktree.test.ts)" },
+    { "id": "NFR2.3", "status": "OK", "target": "security-design.md verification-design table row NFR2.3 (test/domain/policy.test.ts)" },
+    { "id": "NFR2.4", "status": "OK", "target": "security-design.md verification-design table row NFR2.4 (code review of process.ts's execa call sites; npm-remediator.test.ts and ecosystem-remediators.test.ts confirm no remediator calls execa at all)" },
+    { "id": "NFR2.5", "status": "OK", "target": "security-design.md verification-design table row NFR2.5 (code review of DependencyWiring + new test/cli/bootstrap.test.ts, new test/action/main.test.ts)" },
+    { "id": "NFR2.6", "status": "OK", "target": "security-design.md verification-design table row NFR2.6 (test/workflows/ci-pinning.test.ts)" },
+    { "id": "NFR2.7", "status": "OK", "target": "security-design.md verification-design table row NFR2.7 (code review of ai.ts's exported-but-uncalled AI policy gate + ai.test.ts)" }
+  ]
+}
