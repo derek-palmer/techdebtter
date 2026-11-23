@@ -65,5 +65,8 @@
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.69.0",
     "vitest": "^4.1.11"
+  },
+  "overrides": {
+    "esbuild": "^0.28.2"
   }
 }
